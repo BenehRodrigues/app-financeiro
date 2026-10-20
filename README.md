@@ -51,6 +51,7 @@ app-financeiro/
 │           ├── config.js      ← URL da API + configurações
 │           └── views/         ← uma tela por arquivo
 ├── backend/                   ← Apps Script (copiar para o editor)
+│   ├── TODOS_OS_SCRIPTS.gs    ← 👈 versão em 1 arquivo (cole só este)
 │   ├── Utils.gs               ← schema das abas + helpers
 │   ├── Setup.gs               ← cria/formata a planilha + menu
 │   ├── Code.gs                ← a API (doPost/doGet)
@@ -81,12 +82,14 @@ troca de senha e revogação de sessão.
 
 ## Começando (resumo)
 
-1. **Planilha**: cole os 3 `.gs` em <https://script.google.com>, publique como
-   Web App (*Executar como: Eu* / *Acesso: Qualquer pessoa*) e copie a URL
-   `/exec`. Não precisa criar planilha nenhuma antes.
-2. **Backend**: publique o Web App (acima).
-3. **Frontend**: publique a pasta `site/` no GitHub Pages (ou sirva local).
-4. **Conexão**: cole a URL da API na primeira tela do app. Ele detecta se ainda
+1. **Backend**: <https://script.google.com> → Novo projeto → cole **um arquivo só**
+   ([`backend/TODOS_OS_SCRIPTS.gs`](backend/TODOS_OS_SCRIPTS.gs) — a concatenação
+   de `Utils.gs` + `Setup.gs` + `Code.gs`) → **Publicar → Implantar como
+   aplicativo da web** (*Executar como: Eu* / *Acesso: Qualquer pessoa*) →
+   copie a URL `/exec`. Não precisa criar planilha nenhuma antes.
+2. **Frontend**: já publicado em <https://benehrodrigues.github.io/app-financeiro/>
+   (a pasta `site/` é publicada pelo workflow a cada push).
+3. **Conexão**: cole a URL da API na primeira tela do app. Ele detecta se ainda
    não há planilha e **cria tudo** (abas, categorias, contas, caixinhas,
    administrador) em duas telas.
 

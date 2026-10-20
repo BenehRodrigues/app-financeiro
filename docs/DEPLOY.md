@@ -64,6 +64,20 @@ Você tem **três formas** de começar. Escolha a que preferir:
 
 ### 1.1 Instalar os arquivos
 
+Você tem duas opções — **um arquivo só** (mais simples) ou **3 arquivos separados** (melhor para manutenção).
+
+#### Opção 1 — arquivo único (recomendado para começar)
+
+1. Copie tudo de
+   <https://raw.githubusercontent.com/BenehRodrigues/app-financeiro/main/backend/TODOS_OS_SCRIPTS.gs>
+2. No Apps Script: **Arquivo → + → Script**, renomeie para `Backend` e cole.
+3. Salve.
+
+> O arquivo único é a concatenação de `Utils.gs` + `Setup.gs` + `Code.gs`.
+> Passa pelos mesmos 108 testes (`tests/backend.test.html`).
+
+#### Opção 2 — 3 arquivos separados
+
 Crie três arquivos (`+` → *Script*) e cole o conteúdo de:
 | arquivo no repo | nome do arquivo no Apps Script |
 |---|---|

@@ -138,11 +138,22 @@ async function carregarFonte(url) {
 
 (async function run() {
   try {
-    const s1 = await carregarFonte('../backend/Utils.gs');
-    const s2 = await carregarFonte('../backend/Setup.gs');
-    const s3 = await carregarFonte('../backend/Code.gs');
-    log('fontes: Utils=' + (s1 ? s1.length : 'FALHOU') + ' Setup=' + (s2 ? s2.length : 'FALHOU') + ' Code=' + (s3 ? s3.length : 'FALHOU'));
-    if (!s1 || !s2 || !s3) throw new Error('nao consegui ler os .gs');
+    // Prefere o arquivo unico (o que o usuario cola no Apps Script).
+    // Se nao existir, usa os 3 arquivos separados.
+    const sUnico = await carregarFonte('../backend/TODOS_OS_SCRIPTS.gs');
+    let s1, s2, s3, fonteUsada;
+    if (sUnico && sUnico.length > 20000) {
+      s1 = sUnico; s2 = ''; s3 = '';
+      fonteUsada = 'arquivo unico (TODOS_OS_SCRIPTS.gs)';
+    } else {
+      s1 = await carregarFonte('../backend/Utils.gs');
+      s2 = await carregarFonte('../backend/Setup.gs');
+      s3 = await carregarFonte('../backend/Code.gs');
+      fonteUsada = '3 arquivos separados';
+    }
+    log('fonte testada: ' + fonteUsada);
+    log('fontes: ' + (s1 ? s1.length : 'FALHOU') + ' / ' + (s2 ? s2.length : '-') + ' / ' + (s3 ? s3.length : '-') + ' chars');
+    if (!s1) throw new Error('nao consegui ler o(s) .gs');
 
     const api = new Function(s1 + '\n' + s2 + '\n' + s3 + `
       return {

@@ -35,7 +35,9 @@ e B) ou montar tudo à mão (seção 5).
 ### Opção C — o app cria a planilha (mais simples, sem menu)
 
 1. <https://script.google.com> → **Novo projeto**.
-2. Cole os 3 arquivos do backend:
+2. Cole **um arquivo só**: <https://raw.githubusercontent.com/BenehRodrigues/app-financeiro/main/backend/TODOS_OS_SCRIPTS.gs>
+   (Arquivo → + → Script, cole tudo). Se preferir manter separado, use os
+   3 arquivos:
 
    | arquivo no repo | nome no Apps Script |
    |---|---|
