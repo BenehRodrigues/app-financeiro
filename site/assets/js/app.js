@@ -42,6 +42,7 @@ let mesSelecionado = localStorage.getItem(CHAVES.MES) || mesAtual();
  * Inicializacao
  * ------------------------------------------------------------------- */
 async function iniciar() {
+  // tema: preferencia local > configuracao da planilha > padrao do app
   aplicarTema(localStorage.getItem(CHAVES.TEMA) || CONFIG.tema_padrao || 'escuro');
 
   if (!getApiUrl() || !store.autenticado) {
@@ -61,6 +62,11 @@ async function iniciar() {
     document.getElementById('app').innerHTML = login.render();
     login.afterRender();
     return;
+  }
+
+  // a planilha pode definir outro tema padrao (Config.tema_padrao)
+  if (!localStorage.getItem(CHAVES.TEMA)) {
+    aplicarTema(CONFIG.tema_padrao || 'escuro');
   }
 
   modoShell = true;
@@ -96,7 +102,7 @@ function montarShell() {
             <button data-action="mes-proximo" aria-label="Proximo mes">${icone('direita')}</button>
           </div>
           <button class="btn-icone" data-action="atualizar" aria-label="Atualizar">${icone('atualizar')}</button>
-          <button class="btn-icone" data-action="alternar-tema" aria-label="Alternar tema">${icone('lua')}</button>
+          <button class="btn-icone" data-action="alternar-tema" aria-label="Alternar tema" id="btn-tema">${icone('lua')}</button>
           <div class="avatar" data-action="perfil" title="Minha conta">${esc(iniciais(store.estado.usuario?.Nome))}</div>
         </div>
       </header>
@@ -179,6 +185,7 @@ function render() {
   if (sub) sub.textContent = `${store.estado.usuario?.Nome || ''} · ${store.estado.usuario?.Perfil || ''}`;
   const nome = document.getElementById('topo-nome');
   if (nome) nome.textContent = CONFIG.nome_app || 'Controle Financeiro';
+  atualizarIconeTema();
 }
 
 /* ---------------------------------------------------------------------
@@ -235,6 +242,7 @@ const ACOES_GLOBAIS = {
     const atual = document.documentElement.getAttribute('data-tema') === 'claro' ? 'escuro' : 'claro';
     aplicarTema(atual);
     localStorage.setItem(CHAVES.TEMA, atual);
+    atualizarIconeTema();
   },
 
   'mes-anterior'() { mudarMes(-1); },
@@ -265,6 +273,16 @@ function mudarMes(delta) {
 
 function aplicarTema(tema) {
   document.documentElement.setAttribute('data-tema', tema === 'claro' ? 'claro' : 'escuro');
+  atualizarIconeTema();
+}
+
+/** O icone mostra o que sera aplicado no proximo clique. */
+function atualizarIconeTema() {
+  const btn = document.getElementById('btn-tema');
+  if (!btn) return;
+  const claro = document.documentElement.getAttribute('data-tema') === 'claro';
+  btn.innerHTML = icone(claro ? 'lua' : 'sol');
+  btn.title = claro ? 'Mudar para o tema escuro' : 'Mudar para o tema claro';
 }
 
 /* ---------------------------------------------------------------------
