@@ -67,15 +67,21 @@ app-financeiro/
 
 ### Testes
 
-O backend tem uma suíte de testes que roda **no navegador, sem instalar nada**:
-abre `tests/backend.test.html` (precisa ser aberto por `file://` ou por um
-servidor local, para conseguir ler os `.gs`). Ele simula o Google Apps Script
-em memória e valida schema, setup da planilha, hash de senha, login, permissões
-por perfil, CRUD de lançamentos/categorias/contas/caixinhas, parcelamento,
-troca de senha e revogação de sessão.
+Duas suítes rodam **no navegador, sem instalar nada** (abra por `file://` ou
+por um servidor local):
+
+| Arquivo | Cobre | Testes |
+|---|---|---|
+| `tests/backend.test.html` | o Apps Script: schema, setup da planilha, hash, login, permissões, CRUD, parcelamento, caixinhas, correção da `Competencia` | 112 |
+| `tests/calc.test.html` | o front-end: competência, resumos, projeções, caixinhas, datas | 51 |
+
+Elas simulam o Google Apps Script e a planilha em memória, e validam os
+cenários que quebram o app quando a planilha devolve datas em formatos
+diferentes do esperado.
 
 ```
-87 OK / 0 FALHAS
+112 OK / 0 FALHAS   (backend)
+ 51 OK / 0 FALHAS   (front-end)
 ```
 
 ---

@@ -324,7 +324,13 @@ cabeçalhos faltantes, aplica formatação e validações **sem apagar seus dado
 | `CriadoEm`, `AtualizadoEm`, `Timestamp`, `ExpiraEm`, `UltimoAcesso` | `dd/mm/yyyy hh:mm` |
 | `Valor`, `Meta`, `Limite`, `SaldoInicial`, `OrcamentoMensal` | `#,##0.00` |
 | `Competencia`, `Prazo` | **Texto puro** (`@`) — senão o Sheets converte em data |
-| Linha 1 de todas as abas |Negrito, fundo escuro, **fixar linha 1** |
+| Linha 1 de todas as abas | Negrito, fundo escuro, **fixar linha 1** |
+
+> ⚠️ **A coluna `Competencia` precisa ser texto puro.** Se o Sheets a converter
+> em data, o valor gravado vira `01/10/2026` e o app pode somar meses errados.
+> O app sempre deriva a competência da coluna `Data` (por isso não quebra),
+> mas para deixar a planilha limpa, rode **Financeiro → 3. Configurar planilha**
+> de novo: o setup reescreve a coluna `Competencia` como texto.
 
 ---
 
