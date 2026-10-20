@@ -1,0 +1,14 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependências (se algum dia usar build)
+node_modules/
+dist/
+
+# Segredos locais (nunca versionar)
+secrets.js

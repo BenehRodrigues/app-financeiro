@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>Gestor Financeiro</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">💸</span>
+      <span class="brand-name">Gestor Financeiro</span>
+    </div>
+    <div class="topbar-actions">
+      <label class="month-picker" title="Mês de referência">
+        <span class="sr-only">Mês de referência</span>
+        <input type="month" id="monthPicker">
+      </label>
+      <button class="btn btn-ghost" id="btnRefresh" title="Sincronizar com a planilha">⟳</button>
+      <button class="btn btn-primary" id="btnNew">+ Novo lançamento</button>
+    </div>
+  </header>
+
+  <div class="loading" id="loading"><div class="spinner"></div></div>
+
+  <main class="container">
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <!-- KPIs -->
+    <section class="kpis" id="kpis"></section>
+
+    <!-- Gráficos -->
+    <section class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <h2>Receitas × Despesas</h2>
+          <span class="muted">meses com lançamentos</span>
+        </div>
+        <div class="chart-wrap tall"><canvas id="chartMonthly"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h2>Despesas por categoria</h2>
+          <span class="muted" id="chartCatPeriod">—</span>
+        </div>
+        <div class="chart-wrap tall"><canvas id="chartExpCat"></canvas></div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <div class="card-head"><h2>Receitas por categoria</h2></div>
+        <div class="chart-wrap"><canvas id="chartIncCat"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Projeção de caixa</h2><span class="muted">12 meses</span></div>
+        <div class="chart-wrap"><canvas id="chartProjection"></canvas></div>
+      </div>
+    </section>
+
+    <!-- Projeções -->
+    <section class="card">
+      <div class="card-head"><h2>Projeções e Caixa</h2></div>
+      <div class="grid-3" id="projectionCards"></div>
+    </section>
+
+    <!-- Caixinha emergencial -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Caixinha Emergencial</h2>
+        <span class="muted">reserva de segurança</span>
+      </div>
+      <div class="caixinha" id="caixinha"></div>
+      <div class="cx-form">
+        <input type="number" id="cxValor" step="0.01" min="0" placeholder="Valor (R$)" aria-label="Valor">
+        <input type="text" id="cxDescricao" placeholder="Descrição (opcional)" aria-label="Descrição">
+        <button class="btn btn-success" id="cxAporte">+ Aporte</button>
+        <button class="btn btn-danger" id="cxRetirada">− Retirada</button>
+      </div>
+    </section>
+
+    <!-- Lançamentos -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Lançamentos</h2>
+        <div class="filters">
+          <select id="filterTipo" aria-label="Tipo"></select>
+          <select id="filterCat" aria-label="Categoria"></select>
+          <select id="filterStatus" aria-label="Status">
+            <option value="">Todos os status</option>
+            <option>Realizado</option>
+            <option>Previsto</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="tableLanc">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Categoria</th>
+              <th>Descrição</th>
+              <th class="num">Valor</th>
+              <th>Status</th>
+              <th class="actions"></th>
+            </tr>
+          </thead>
+          <tbody id="tbodyLanc"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Dados sincronizados com o Google Sheets.</span>
+      <a href="docs/SETUP.md" target="_blank" rel="noopener">Configuração</a>
+    </footer>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <h3 id="modalTitle">Novo lançamento</h3>
+        <button class="icon-btn" id="modalClose" aria-label="Fechar">×</button>
+      </div>
+      <form id="formLanc" class="modal-body">
+        <input type="hidden" id="fId">
+        <div class="field">
+          <label for="fData">Data</label>
+          <input type="date" id="fData" required>
+        </div>
+        <div class="field">
+          <label for="fTipo">Tipo</label>
+          <select id="fTipo">
+            <option>Receita</option>
+            <option>Gasto Fixo</option>
+            <option>Gasto Variável</option>
+            <option>Cartão de Crédito</option>
+            <option>Empréstimo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fCategoria">Categoria</label>
+          <input type="text" id="fCategoria" list="catList" autocomplete="off" required>
+          <datalist id="catList"></datalist>
+        </div>
+        <div class="field">
+          <label for="fDescricao">Descrição</label>
+          <input type="text" id="fDescricao" required>
+        </div>
+        <div class="field">
+          <label for="fValor">Valor (R$)</label>
+          <input type="number" id="fValor" step="0.01" min="0" required>
+        </div>
+        <div class="field">
+          <label for="fStatus">Status</label>
+          <select id="fStatus">
+            <option>Realizado</option>
+            <option>Previsto</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="btnCancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/format.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
