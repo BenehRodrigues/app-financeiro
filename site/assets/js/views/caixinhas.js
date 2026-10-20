@@ -14,7 +14,7 @@ export default {
 
   render(ctx) {
     const caixinhas = store.estado.caixinhas;
-    const total = caixinhas.reduce((s, c) => s + calc.saldoCaixinha(c, store.estado.movimentacoes), 0);
+    const total = caixinhas.reduce((s, c) => s + calc.saldoCaixinha(c, store.estado.movimentacoes, store.estado.lancamentos), 0);
     const metaTotal = caixinhas.reduce((s, c) => s + (Number(c.Meta) || 0), 0);
 
     return `
@@ -112,7 +112,7 @@ export default {
  * ------------------------------------------------------------------- */
 function cartaoCaixinha(c) {
   const movs = calc.movimentosDe(c.ID, store.estado.movimentacoes);
-  const p = calc.projecaoCaixinha(c, store.estado.movimentacoes);
+  const p = calc.projecaoCaixinha(c, store.estado.movimentacoes, { lancamentos: store.estado.lancamentos });
   const cor = c.Cor || '#22c55e';
   const ultimo = movs[0];
 
@@ -138,6 +138,24 @@ function cartaoCaixinha(c) {
           <span>Meta <b>${moeda(p.meta)}</b></span>
           <span>${p.atingida ? '✓ Meta atingida' : `Faltam ${moeda(p.restante)}`}</span>
         </div>
+
+        ${(p.qtdLancamentos || p.qtdMovimentacoes) ? `
+        <div class="caixinha-info" style="border-top:1px solid var(--border-soft);padding-top:10px;flex-direction:column;gap:5px">
+          ${p.qtdLancamentos ? `
+          <div style="display:flex;justify-content:space-between;width:100%">
+            <span>Lancamentos vinculados (${p.qtdLancamentos})</span>
+            <b style="color:${p.lances >= 0 ? 'var(--receita)' : 'var(--despesa)'}">${moeda(p.lances)}</b>
+          </div>` : ''}
+          ${p.qtdMovimentacoes ? `
+          <div style="display:flex;justify-content:space-between;width:100%">
+            <span>Aportes manuais (${p.qtdMovimentacoes})</span>
+            <b style="color:${p.manual >= 0 ? 'var(--receita)' : 'var(--despesa)'}">${moeda(p.manual)}</b>
+          </div>` : ''}
+          ${p.inicial ? `
+          <div style="display:flex;justify-content:space-between;width:100%">
+            <span>Saldo inicial</span><b>${moeda(p.inicial)}</b>
+          </div>` : ''}
+        </div>` : ''}
 
         ${p.meta > 0 ? `
         <div class="caixinha-info" style="border-top:1px solid var(--border-soft);padding-top:10px;flex-direction:column;gap:5px">
@@ -187,7 +205,7 @@ function abrirDetalhe(id) {
   const c = store.caixinhaPorId(id);
   if (!c) return;
   const movs = calc.movimentosDe(id, store.estado.movimentacoes);
-  const p = calc.projecaoCaixinha(c, store.estado.movimentacoes);
+  const p = calc.projecaoCaixinha(c, store.estado.movimentacoes, { lancamentos: store.estado.lancamentos });
 
   const corpo = `
     <div style="display:grid;gap:16px">
@@ -217,7 +235,7 @@ function abrirDetalhe(id) {
       </div>` : ''}
 
       <div>
-        <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Movimentacoes</h4>
+        <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Movimentacoes manuais</h4>
         ${movs.length ? `<div class="lista">${movs.map((m) => `
           <div class="lista-item">
             <span class="ponto" style="background:${String(m.Tipo).toLowerCase().startsWith('sai') ? 'var(--despesa)' : 'var(--receita)'}"></span>
@@ -229,7 +247,28 @@ function abrirDetalhe(id) {
               ${String(m.Tipo).toLowerCase().startsWith('sai') ? '-' : '+'}${moeda(m.Valor).replace('-', '')}
             </span>
             ${store.podeEditar ? `<button class="btn-icone" data-action="excluir-mov" data-id="${m.ID}" title="Excluir">${icone('excluir')}</button>` : ''}
-          </div>`).join('')}</div>` : '<div class="vazio"><p>Sem movimentacoes.</p></div>'}
+          </div>`).join('')}</div>` : '<div class="vazio"><p>Sem aportes manuais.</p></div>'}
+      </div>
+
+      <div>
+        <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:8px">
+          Lancamentos vinculados (${p.qtdLancamentos})
+        </h4>
+        ${p.lancamentos && p.lancamentos.length ? `<div class="lista">${p.lancamentos.map((l) => `
+          <div class="lista-item">
+            <span class="ponto" style="background:${store.categoriaPorId(l.CategoriaID)?.Cor || '#64748b'}"></span>
+            <div class="principal">
+              <div class="titulo">${esc(l.Descricao)}</div>
+              <div class="meta">${esc(dataBR(l.Data))} · ${esc(store.nomeCategoria(l.CategoriaID))} · ${esc(l.Status || '')}</div>
+            </div>
+            <span class="valor ${l.Tipo === 'Receita' ? 'valor-receita' : 'valor-despesa'}">
+              ${l.Tipo === 'Receita' ? '+' : '-'}${moeda(l.Valor).replace('-', '')}
+            </span>
+          </div>`).join('')}</div>` : `
+          <div class="vazio"><p>
+            Nenhum lancamento vinculado a esta caixinha.<br>
+            Ao criar um lancamento, escolha esta caixinha no campo "Caixinha vinculada".
+          </p></div>`}
       </div>
     </div>`;
 

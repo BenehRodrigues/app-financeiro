@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Teste do calc (front-end)</title></head>
+<body>
+<pre id="out">executando…</pre>
+<script type="module">
+/* =====================================================================
+ * Testes do front-end: calc.js + utils.js
+ * Foco: o app nao pode quebrar quando a planilha devolve datas/competencias
+ * em formatos inesperados (coluna virada data, dd/mm/yyyy, espacos...).
+ * ===================================================================== */
+import * as calc from '../site/assets/js/calc.js';
+import * as utils from '../site/assets/js/utils.js';
+
+const OUT = [];
+let ok = 0, fail = 0;
+function log(s) { OUT.push(s); }
+function check(nome, cond, extra) {
+  if (cond) { ok++; log('  OK   ' + nome); }
+  else { fail++; log('  FALHA ' + nome + (extra !== undefined ? ' :: ' + JSON.stringify(extra) : '')); }
+}
+function eq(nome, got, expected) {
+  const g = JSON.stringify(got), e = JSON.stringify(expected);
+  check(nome + ' (obtido ' + g + ')', g === e, { got: got, expected: expected });
+}
+
+const base = {
+  ID: 'l1', Data: '2026-10-15', Tipo: 'Despesa', Valor: 1500, Descricao: 'Aluguel',
+  CategoriaID: 'c1', ContaID: 'k1', FormaPagamento: 'Credito', Parcelas: 1, ParcelaAtual: 1,
+  Status: 'Pago', Recorrente: 'NAO', Fixo: 'NAO', Competencia: '2026-10',
+  CaixinhaID: '', GrupoParcelas: '', Obs: ''
+};
+
+log('== competencia: formatos que a planilha pode devolver ==');
+eq('competencia correta', calc.competencia(base), '2026-10');
+eq('competencia vazia usa a data', calc.competencia({ ...base, Competencia: '' }), '2026-10');
+eq('competencia como Date', calc.competencia({ ...base, Competencia: new Date(2026, 9, 1, 12) }), '2026-10');
+eq('competencia dd/mm/aaaa', calc.competencia({ ...base, Competencia: '01/10/2026' }), '2026-10');
+eq('competencia com espaco', calc.competencia({ ...base, Competencia: '2026-10 ' }), '2026-10');
+eq('competencia numerica', calc.competencia({ ...base, Competencia: 202610 }), '2026-10');
+eq('data como Date', calc.competencia({ ...base, Competencia: '', Data: new Date(2026, 9, 15, 12) }), '2026-10');
+eq('data dd/mm/aaaa', calc.competencia({ ...base, Competencia: '', Data: '15/10/2026' }), '2026-10');
+eq('data com hora', calc.competencia({ ...base, Competencia: '', Data: '2026-10-15T10:30:00' }), '2026-10');
+// a Data manda: uma competencia convertida em data nao pode "puxar" o mes
+eq('competencia data-string nao vence a Data',
+  calc.competencia({ ...base, Data: '2026-09-05', Competencia: 'Thu Oct 01 2026 12:00:00 GMT-0300 (Horario Padrao de Brasilia)' }), '2026-09');
+eq('competencia dd/mm nao vence a Data',
+  calc.competencia({ ...base, Data: '2026-09-05', Competencia: '01/10/2026' }), '2026-09');
+
+log('');
+log('== os agregados nao podem quebrar com competencia suja ==');
+for (const [nome, l] of Object.entries({
+  'data como Date': { ...base, Competencia: '', Data: new Date(2026, 9, 15, 12) },
+  'competencia como Date': { ...base, Competencia: new Date(2026, 9, 1, 12) },
+  'data dd/mm/aaaa': { ...base, Competencia: '', Data: '15/10/2026' }
+})) {
+  const lista = [l];
+  const filtrados = calc.filtrar(lista, { mes: '2026-10' });
+  eq(nome + ': passa no filtro', filtrados.length, 1);
+  eq(nome + ': soma a despesa', calc.resumo(filtrados).despesas, 1500);
+  eq(nome + ': aparece na serie', calc.serieMensal(lista, 12, '2026-10')[11].despesas, 1500);
+  eq(nome + ': categoria agrupa', calc.porCategoria(lista, '2026-10', 'Despesa')[0].valor, 1500);
+}
+
+log('');
+log('== resumo do mes ==');
+const lista = [
+  { ...base, ID: 'a', Valor: 1000, Tipo: 'Receita' },
+  { ...base, ID: 'b', Valor: 250.5, Descricao: 'Mercado' },
+  { ...base, ID: 'c', Valor: 99, Descricao: 'Pendente', Status: 'Pendente' }
+];
+const r = calc.resumoMes(lista, '2026-10');
+eq('receitas', r.receitas, 1000);
+eq('despesas', r.despesas, 349.5);
+eq('saldo', r.saldo, 650.5);
+check('pendentes somados', r.pendentes > 0);
+
+log('');
+log('== projecao de recorrentes (sem duplicar) ==');
+const ALUGUEL = 1500;
+const recorrente = { ...base, ID: 'r1', Valor: ALUGUEL, Recorrente: 'SIM', Fixo: 'SIM', Descricao: 'Aluguel' };
+const comRec = [recorrente, { ...recorrente, ID: 'r2', Data: '2026-11-10', Competencia: '2026-11' }];
+const projNov = calc.projecaoMes(comRec, '2026-11');
+eq('novembro: realizado (1 registro)', projNov.realizado.despesas, ALUGUEL);
+eq('novembro: projetado sem duplicar', projNov.projetado.despesas, ALUGUEL);
+const projDez = calc.projecaoMes(comRec, '2026-12');
+eq('dezembro: realizado vazio', projDez.realizado.despesas, 0);
+eq('dezembro: projetado com a serie', projDez.projetado.despesas, ALUGUEL);
+eq('fixos de dezembro', projDez.fixosValor, ALUGUEL);
+
+log('');
+log('== caixinha: lancamentos vinculados entram no saldo ==');
+const cx = { ID: 'x1', Nome: 'Reserva', Meta: 5000, Prazo: '', SaldoInicial: 100, Cor: '#22c55e', Ativo: 'SIM' };
+const movs = [{ ID: 'm1', CaixinhaID: 'x1', Data: '2026-10-01', Tipo: 'Entrada', Valor: 400, Descricao: 'Aporte' }];
+const semLances = calc.saldoCaixinha(cx, movs, []);
+eq('sem lancamentos: 100 + 400', semLances, 500);
+
+const lances = [
+  { ...base, ID: 'x1', CaixinhaID: 'x1', Valor: 200, Tipo: 'Receita', Data: '2026-10-05' },
+  { ...base, ID: 'x2', CaixinhaID: 'x1', Valor: 50, Tipo: 'Despesa', Data: '2026-10-06' },
+  { ...base, ID: 'x3', CaixinhaID: 'x1', Valor: 999, Tipo: 'Despesa', Status: 'Cancelado' }
+];
+const comLances = calc.saldoCaixinha(cx, movs, lances);
+eq('com lancamentos: 100 + 400 + 200 - 50 (cancelado fora)', comLances, 650);
+const det = calc.detalheCaixinha(cx, movs, lances);
+eq('quebra: lancamentos', det.lances, 150);
+eq('quebra: manuais', det.manual, 400);
+eq('quebra: inicial', det.inicial, 100);
+eq('quebra: total', det.saldo, 650);
+eq('quantidade de lancamentos (cancelado fora)', det.qtdLancamentos, 2);
+
+log('');
+log('== projecao da caixinha ==');
+const p = calc.projecaoCaixinha(cx, movs, { lancamentos: lances });
+eq('saldo projetado', p.saldo, 650);
+eq('restante para a meta', p.restante, 4350);
+check('percentual', p.percentual > 0 && p.percentual < 100);
+check('serie tem 6 meses', p.serie.length === 6);
+
+log('');
+log('== utils ==');
+eq('normalizarData iso', utils.normalizarData('2026-10-15'), '2026-10-15');
+eq('normalizarData br', utils.normalizarData('15/10/2026'), '2026-10-15');
+eq('normalizarData Date', utils.normalizarData(new Date(2026, 9, 15, 12)), '2026-10-15');
+eq('normalizarCompetencia vazio', utils.normalizarCompetencia(''), '');
+eq('normalizarCompetencia invalido', utils.normalizarCompetencia('abc'), '');
+eq('dataBR iso', utils.dataBR('2026-10-15'), '15/10/2026');
+eq('dataBR br', utils.dataBR('15/10/2026'), '15/10/2026');
+eq('mesBR', utils.mesBR('2026-10'), 'out/2026');
+
+log('');
+log('===== ' + ok + ' OK / ' + fail + ' FALHAS =====');
+document.getElementById('out').textContent = OUT.join('\n');
+window.__RESULT = { ok: ok, fail: fail, log: OUT.join('\n') };
+document.title = 'TESTE ' + ok + 'ok/' + fail + 'falha';
+</script>
+</body></html>

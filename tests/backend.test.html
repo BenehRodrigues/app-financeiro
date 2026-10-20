@@ -159,7 +159,8 @@ async function carregarFonte(url) {
       return {
         SCHEMA, configurarPlanilha, lerLinhas, hashSenha, validarSenha, competenciaDe,
         addMesesData, toCell, fromCell, bytesToHex, agora, autenticar, doPost,
-        criarNovaPlanilha, configurarPlanilha, criarAdminPeloMenu, diagnostico, getSS
+        criarNovaPlanilha, configurarPlanilha, criarAdminPeloMenu, diagnostico, getSS,
+        corrigirCompetencia
       };`)();
 
     /** Chama a API pelo caminho real (doPost) e devolve o JSON. */
@@ -369,6 +370,25 @@ async function carregarFonte(url) {
     api.configurarPlanilha({ silencioso: true });
     check('usa a planilha ativa sem property', FAKE.props['SPREADSHEET_ID'] === FAKE.ativa.getId(), FAKE.props['SPREADSHEET_ID']);
     check('abas criadas na planilha do container', !!FAKE.ativa.getSheetByName('Acessos'));
+
+    log('');
+    log('== CORRIGIR COMPETENCIA (coluna convertida em data) ==');
+    FAKE.props = {}; FAKE.ss = null; FAKE.ativa = null;
+    const cp3 = call('criarplanilha', { nome: 'Planilha Com Data Suja' });
+    check('planilha criada', cp3.ok === true, cp3);
+    // simula o Sheets convertendo a coluna Competencia em data
+    const shL = FAKE.ss.getSheetByName('Lancamentos');
+    const heads = shL.data[0].map(String);
+    const cData = heads.indexOf('Data') + 1;
+    const cComp = heads.indexOf('Competencia') + 1;
+    shL.data.push(['l1', new Date(2026, 9, 15, 12), 'Despesa', 1500, 'Aluguel', 'c1', 'k1',
+      'Credito', 1, 1, 'Pago', 'NAO', 'NAO', new Date(2026, 9, 1, 12), '', '', '', '', '', '', '']);
+    const antesValor = shL.data[shL.data.length - 1][cComp - 1];
+    check('antes: competencia e Date', antesValor instanceof Date, antesValor);
+    const nCorrigidos = api.corrigirCompetencia();
+    const depoisValor = shL.data[shL.data.length - 1][cComp - 1];
+    eq('depois: competencia virou texto AAAA-MM', String(depoisValor), '2026-10');
+    check('contou a correcao', nCorrigidos >= 1, nCorrigidos);
 
     log('');
     log('== SEM PLANILHA: ERRO CLARO ==');

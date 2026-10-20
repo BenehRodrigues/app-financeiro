@@ -74,6 +74,13 @@ async function iniciar() {
   store.subscribe(() => { if (modoShell) render(); });
   window.addEventListener('hashchange', render);
   window.addEventListener('app:repintar', render);
+  window.addEventListener('app:mes', (e) => {
+    if (e && e.detail) {
+      mesSelecionado = e.detail;
+      localStorage.setItem(CHAVES.MES, mesSelecionado);
+      render();
+    }
+  });
   iniciarAutoRefresh();
   render();
 }

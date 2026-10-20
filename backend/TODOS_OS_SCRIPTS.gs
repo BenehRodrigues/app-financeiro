@@ -672,6 +672,10 @@ function configurarPlanilha(opcoes) {
 
   popularPadroes();
 
+  // corrige a coluna Competencia (o Sheets pode ter convertido em data)
+  var corrigidos = 0;
+  try { corrigidos = corrigirCompetencia(); } catch (e) { /* ignora */ }
+
   var temUsuario = false;
   try { temUsuario = lerLinhas('Acessos').length > 0; } catch (e) { /* ignora */ }
 
@@ -679,7 +683,9 @@ function configurarPlanilha(opcoes) {
     var msg = 'Planilha configurada!\n\n' +
               'Planilha: ' + ss.getName() + '\n' +
               'URL: ' + ss.getUrl() + '\n\n' +
-              'Abas criadas: ' + nomes.join(', ') + '\n\n';
+              'Abas criadas: ' + nomes.join(', ') + '\n';
+    if (corrigidos) msg += 'Competencia corrigida em ' + corrigidos + ' linha(s).\n';
+    msg += '\n';
     msg += temUsuario
       ? 'Usuarios cadastrados: ' + lerLinhas('Acessos').length + '\n'
       : 'Nenhum usuario cadastrado ainda.\n';
@@ -687,7 +693,46 @@ function configurarPlanilha(opcoes) {
     if (!temUsuario) criarAdminPeloMenu();
   }
 
-  return { ss: ss, abas: nomes, temUsuario: temUsuario };
+  return { ss: ss, abas: nomes, temUsuario: temUsuario, corrigidos: corrigidos };
+}
+
+/**
+ * Reescreve a coluna Competencia como texto (AAAA-MM), sempre derivada da
+ * coluna Data. O Sheets converte "2026-10" em data quando a coluna esta com
+ * formato de data, e isso quebrava os relatorios do app.
+ */
+function corrigirCompetencia() {
+  var s = getSheet('Lancamentos');
+  var lastRow = s.getLastRow();
+  if (lastRow < 2) return 0;
+
+  var heads = s.getRange(1, 1, 1, s.getLastColumn()).getValues()[0];
+  for (var h = 0; h < heads.length; h++) { heads[h] = String(heads[h]).trim(); }
+
+  var colData = heads.indexOf('Data') + 1;
+  var colComp = heads.indexOf('Competencia') + 1;
+  if (colData < 1 || colComp < 1) return 0;
+
+  var datas = s.getRange(2, colData, lastRow - 1, 1).getValues();
+  var atuais = s.getRange(2, colComp, lastRow - 1, 1).getValues();
+  var novos = [];
+  var alterados = 0;
+
+  for (var i = 0; i < datas.length; i++) {
+    var d = datas[i][0];
+    var comp = d ? competenciaDe(d) : '';
+    var atual = atuais[i][0];
+    var atualTexto = String(atual === null || atual === undefined ? '' : atual).trim();
+    // precisa regravar quando o valor atual e uma data ou difere do esperado
+    if ((atual instanceof Date) || atualTexto !== comp) alterados++;
+    novos.push([comp]);
+  }
+
+  // texto puro na coluna
+  s.getRange(2, colComp, novos.length, 1).setNumberFormat('@');
+  s.getRange(2, colComp, novos.length, 1).setValues(novos);
+
+  return alterados;
 }
 
 /** Pede o ID/URL de uma planilha existente e guarda nas Script Properties. */

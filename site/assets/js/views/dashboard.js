@@ -29,12 +29,16 @@ export default {
     const categorias = calc.porCategoria(l, mes, 'Despesa');
     const topo = categorias.slice(0, 6);
 
-    const totalCaixinhas = estado.caixinhas.reduce((s, c) => s + calc.saldoCaixinha(c, estado.movimentacoes), 0);
+    const totalCaixinhas = estado.caixinhas.reduce((s, c) => s + calc.saldoCaixinha(c, estado.movimentacoes, estado.lancamentos), 0);
     const metaCaixinhas = estado.caixinhas.reduce((s, c) => s + (Number(c.Meta) || 0), 0);
     const taxaPoupanca = resumoMes.receitas > 0 ? (resumoMes.saldo / resumoMes.receitas) * 100 : 0;
 
     const proximos = calc.proximos(l, 30).slice(0, 8);
     const fixos = proj.fixos;
+
+    // meses que tem dados (para avisar quando o mes selecionado esta vazio)
+    const mesesComDados = [...new Set(l.map((x) => calc.competencia(x)).filter(Boolean))].sort().reverse();
+    const mesSemDados = mesesComDados.length > 0 && !mesesComDados.includes(mes);
 
     return `
       <div class="pagina">
@@ -47,6 +51,21 @@ export default {
             <button class="btn btn-pequeno" data-action="atualizar">${icone('atualizar')} Atualizar</button>
           </div>
         </div>
+
+        ${mesSemDados ? `
+        <div class="card card-pad" style="border-color:color-mix(in srgb, var(--warning) 45%, transparent)">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <span style="color:var(--warning);font-size:18px">${icone('alerta')}</span>
+            <div style="flex:1;min-width:200px">
+              <div style="font-weight:600;font-size:14px">Nenhum lancamento em ${esc(mesExtenso(mes))}</div>
+              <div class="num-pequeno">Seus lancamentos estao em outros meses. Use as setas ao lado do logo para mudar o mes.</div>
+            </div>
+            <div class="chips">
+              ${mesesComDados.slice(0, 6).map((m) => `
+                <button class="chip" data-action="ir-mes" data-valor="${m}">${esc(mesBR(m))}</button>`).join('')}
+            </div>
+          </div>
+        </div>` : ''}
 
         <div class="kpis">
           ${kpi('Receitas do mes', moeda(resumoMes.receitas), 'receita', '', '#22c55e')}
@@ -200,7 +219,7 @@ export default {
           <div class="card-corpo">
             <div class="grid grid-auto">
               ${estado.caixinhas.slice(0, 6).map((c) => {
-                const p = calc.projecaoCaixinha(c, estado.movimentacoes);
+                const p = calc.projecaoCaixinha(c, estado.movimentacoes, { lancamentos: estado.lancamentos });
                 return `
                   <div class="caixinha">
                     <div class="caixinha-topo">
@@ -224,5 +243,9 @@ export default {
       </div>`;
   },
 
-  actions: {}
+  actions: {
+    'ir-mes'(el) {
+      window.dispatchEvent(new CustomEvent('app:mes', { detail: el.dataset.valor }));
+    }
+  }
 };

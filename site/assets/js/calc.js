@@ -2,15 +2,28 @@
  * calc.js — calculos financeiros (resumo, projecao, caixinhas)
  * Todos os valores sao feitos aqui para o painel nao ter logica espalhada.
  * ===================================================================== */
-import { isoParaMes, addMeses, diffMeses, mesAtual, hojeISO, diasAte, paraData } from './utils.js';
+import {
+  isoParaMes, addMeses, diffMeses, mesAtual, hojeISO, diasAte, paraData,
+  normalizarData, normalizarCompetencia
+} from './utils.js';
 
 const RECORRENTE = (l) => String(l.Recorrente || '').toUpperCase() === 'SIM';
 const FIXO = (l) => String(l.Fixo || '').toUpperCase() === 'SIM';
 const RECEB = (l) => String(l.Tipo || '').toLowerCase() === 'receita';
 
-/** Competencia do lancamento (usa a coluna, com fallback na data). */
+/**
+ * Competencia (yyyy-MM) do lancamento.
+ *
+ * SEMPRE derivada da Data, que e a fonte da verdade. A coluna Competencia
+ * so e usada quando a Data nao pode ser lida. Isso protege o app caso a
+ * planilha tenha convertido a coluna Competencia em data (o navegador
+ * interpretaria "Thu Oct 01 2026 ..." como outubro e lancamentos de
+ * setembro seriam contados em outubro).
+ */
 export function competencia(l) {
-  return String(l.Competencia || isoParaMes(l.Data) || '');
+  const d = normalizarData(l.Data);
+  if (d) return d.slice(0, 7);
+  return normalizarCompetencia(l.Competencia);
 }
 
 export function valorTotal(l) {
@@ -214,6 +227,13 @@ export function proximos(lancamentos, dias = 30) {
 
 /* ---------------------------------------------------------------------
  * Caixinhas
+ *
+ * Saldo = SaldoInicial
+ *       + entradas/saidas anotadas na aba Movimentacoes
+ *       + lancamentos vinculados a caixinha (pelo campo CaixinhaID)
+ *
+ * O detalhe de cada parte fica visivel na tela para nao haver duvida
+ * de onde veio o dinheiro.
  * ------------------------------------------------------------------- */
 export function movimentosDe(caixinhaId, movimentos) {
   return (movimentos || [])
@@ -221,35 +241,84 @@ export function movimentosDe(caixinhaId, movimentos) {
     .sort((a, b) => String(b.Data).localeCompare(String(a.Data)));
 }
 
-export function saldoCaixinha(caixinha, movimentos) {
-  const inicial = Number(caixinha?.SaldoInicial) || 0;
-  let saldo = inicial;
-  for (const m of movimentosDe(caixinha?.ID, movimentos)) {
-    const v = Number(m.Valor) || 0;
-    saldo += String(m.Tipo).toLowerCase().startsWith('sai') ? -v : v;
+/** Lancamentos vinculados a uma caixinha (cancelados ficam de fora). */
+export function lancamentosDaCaixinha(caixinhaId, lancamentos) {
+  return (lancamentos || []).filter((l) =>
+    l.CaixinhaID === caixinhaId &&
+    String(l.Status || '').toLowerCase() !== 'cancelado'
+  );
+}
+
+/** Saldo dos lancamentos vinculados (receita entra, despesa sai). */
+export function saldoLancamentosCaixinha(caixinhaId, lancamentos) {
+  let total = 0;
+  for (const l of lancamentosDaCaixinha(caixinhaId, lancamentos)) {
+    const v = Number(l.Valor) || 0;
+    total += RECEB(l) ? v : -v;
   }
-  return saldo;
+  return total;
+}
+
+/** Saldo apenas das movimentacoes manuais. */
+export function saldoMovimentacoes(caixinhaId, movimentos) {
+  let total = 0;
+  for (const m of movimentosDe(caixinhaId, movimentos)) {
+    const v = Number(m.Valor) || 0;
+    total += String(m.Tipo || '').toLowerCase().startsWith('sai') ? -v : v;
+  }
+  return total;
+}
+
+/** Quebra completa do saldo da caixinha. */
+export function detalheCaixinha(caixinha, movimentos, lancamentos) {
+  const inicial = Number(caixinha?.SaldoInicial) || 0;
+  const manual = saldoMovimentacoes(caixinha?.ID, movimentos);
+  const lances = saldoLancamentosCaixinha(caixinha?.ID, lancamentos);
+  const vinculados = lancamentosDaCaixinha(caixinha?.ID, lancamentos);
+  return {
+    inicial,
+    manual,
+    lances,
+    saldo: inicial + manual + lances,
+    qtdMovimentacoes: movimentosDe(caixinha?.ID, movimentos).length,
+    qtdLancamentos: vinculados.length,
+    lancamentos: vinculados
+  };
+}
+
+export function saldoCaixinha(caixinha, movimentos, lancamentos) {
+  return detalheCaixinha(caixinha, movimentos, lancamentos).saldo;
 }
 
 /** Media mensal de aportes nos ultimos N meses (meses sem aporte contam como zero). */
-export function mediaMensal(caixinhaId, movimentos, meses = 3, ate = mesAtual()) {
+export function mediaMensal(caixinhaId, movimentos, meses = 3, ate = mesAtual(), lancamentos = null) {
   const janela = new Set();
   for (let i = 0; i < meses; i++) janela.add(addMeses(ate, -i));
+
   let total = 0;
   for (const m of movimentosDe(caixinhaId, movimentos)) {
-    const c = isoParaMes(m.Data);
-    if (!janela.has(c)) continue;
-    if (String(m.Tipo).toLowerCase().startsWith('sai')) continue;
+    if (!janela.has(isoParaMes(normalizarData(m.Data)))) continue;
+    if (String(m.Tipo || '').toLowerCase().startsWith('sai')) continue;
     total += Number(m.Valor) || 0;
   }
+
+  if (lancamentos) {
+    for (const l of lancamentosDaCaixinha(caixinhaId, lancamentos)) {
+      if (!janela.has(competencia(l))) continue;
+      if (!RECEB(l)) continue;                    // so entradas contam como aporte
+      total += Number(l.Valor) || 0;
+    }
+  }
+
   return total / meses;
 }
 
-export function projecaoCaixinha(caixinha, movimentos, { mesesProjecao = 6 } = {}) {
-  const saldo = saldoCaixinha(caixinha, movimentos);
+export function projecaoCaixinha(caixinha, movimentos, { mesesProjecao = 6, lancamentos = null } = {}) {
+  const det = detalheCaixinha(caixinha, movimentos, lancamentos);
+  const saldo = det.saldo;
   const meta = Number(caixinha?.Meta) || 0;
   const restante = Math.max(0, meta - saldo);
-  const media = mediaMensal(caixinha?.ID, movimentos, 3);
+  const media = mediaMensal(caixinha?.ID, movimentos, 3, mesAtual(), lancamentos);
   const prazo = String(caixinha?.Prazo || '');
   const mesesAtePrazo = prazo ? Math.max(0, diffMeses(mesAtual(), prazo)) : null;
   const aporteNecessario = (prazo && mesesAtePrazo > 0) ? restante / mesesAtePrazo : null;
@@ -263,6 +332,7 @@ export function projecaoCaixinha(caixinha, movimentos, { mesesProjecao = 6 } = {
   }
 
   return {
+    ...det,
     saldo,
     meta,
     restante,

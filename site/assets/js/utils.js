@@ -73,11 +73,75 @@ export function hojeISO() {
 /** Converte 'yyyy-MM-dd' (sem fuso) em Date local — seguro. */
 export function paraData(iso) {
   if (!iso) return null;
-  const s = String(iso).slice(0, 10);
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) { const d = new Date(s); return isNaN(d.getTime()) ? null : d; }
-  return new Date(+m[1], +m[2] - 1, +m[3]);
+  if (iso instanceof Date) return isNaN(iso.getTime()) ? null : iso;
+  const s = String(iso).trim();
+  if (!s) return null;
+
+  // yyyy-mm-dd
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+
+  // dd/mm/yyyy
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
 }
+
+const pad2 = (n) => String(n).padStart(2, '0');
+
+/**
+ * Normaliza qualquer formato de data para 'yyyy-MM-dd'.
+ * Aceita: Date, 'yyyy-MM-dd', 'dd/mm/yyyy', 'yyyy-MM-ddTHH:mm:ss', timestamps.
+ */
+export function normalizarData(v) {
+  if (!v && v !== 0) return '';
+  if (v instanceof Date) {
+    if (isNaN(v.getTime())) return '';
+    return `${v.getFullYear()}-${pad2(v.getMonth() + 1)}-${pad2(v.getDate())}`;
+  }
+  const s = String(v).trim();
+  if (!s) return '';
+
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`;
+
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return `${m[3]}-${pad2(m[2])}-${pad2(m[1])}`;
+
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  return '';
+}
+
+/**
+ * Normaliza a competencia para 'yyyy-MM'.
+ * Aceita: 'yyyy-MM', 'yyyy-MM-dd', 'dd/mm/yyyy', Date, numero (yyyymm),
+ * string com espacos. Devolve '' quando nao da para interpretar.
+ */
+export function normalizarCompetencia(v) {
+  if (v === undefined || v === null) return '';
+  if (v instanceof Date) return normalizarData(v).slice(0, 7);
+
+  const s = String(v).trim();
+  if (!s) return '';
+
+  // yyyy-mm ou yyyy-mm-dd
+  let m = s.match(/^(\d{4})-(\d{1,2})(?:-\d{1,2})?$/);
+  if (m) return `${m[1]}-${pad2(m[2])}`;
+
+  // yyyymm
+  m = s.match(/^(\d{4})(\d{2})$/);
+  if (m) return `${m[1]}-${m[2]}`;
+
+  // dd/mm/yyyy ou qualquer data reconhecivel
+  const data = normalizarData(s);
+  if (data) return data.slice(0, 7);
+
+  return '';
+}
+
 
 export function dataBR(iso) {
   const d = paraData(iso);
