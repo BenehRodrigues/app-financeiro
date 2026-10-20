@@ -117,6 +117,23 @@ check('percentual', p.percentual > 0 && p.percentual < 100);
 check('serie tem 6 meses', p.serie.length === 6);
 
 log('');
+log('== quebra por categoria resolve o NOME (nao o id) ==');
+const comId = [
+  { ...base, ID: 'k1', CategoriaID: 'cat-uuid-1', Valor: 100 },
+  { ...base, ID: 'k2', CategoriaID: 'cat-uuid-2', Valor: 200 },
+  { ...base, ID: 'k3', CategoriaID: 'cat-uuid-1', Valor: 50 }
+];
+const semResolver = calc.porCategoria(comId, '2026-10', 'Despesa');
+eq('sem resolver: rotulo e o id', semResolver[0].rotulo, 'cat-uuid-2');
+const comResolver = calc.porCategoria(comId, '2026-10', 'Despesa',
+  (id) => ({ 'cat-uuid-1': 'Aluguel', 'cat-uuid-2': 'Mercado' }[id] || 'Sem categoria'));
+eq('com resolver: rotulo e o nome', comResolver[0].rotulo, 'Mercado');
+eq('com resolver: agrupa pelo id', comResolver.length, 2);
+eq('com resolver: soma por categoria', comResolver.find(c => c.rotulo === 'Aluguel').valor, 150);
+eq('resolver padrao para id desconhecido',
+  calc.porCategoria(comId, '2026-10', 'Despesa', () => 'Sem categoria')[0].rotulo !== '', true);
+
+log('');
 log('== utils ==');
 eq('normalizarData iso', utils.normalizarData('2026-10-15'), '2026-10-15');
 eq('normalizarData br', utils.normalizarData('15/10/2026'), '2026-10-15');

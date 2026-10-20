@@ -26,7 +26,8 @@ export default {
     const resumoMes = calc.resumoMes(l, mes);
     const proj = calc.projecaoMes(l, mes);
     const serie = calc.serieMensal(l, 12, mes);
-    const categorias = calc.porCategoria(l, mes, 'Despesa');
+    const resolverCat = (id) => store.nomeCategoria(id);
+    const categorias = calc.porCategoria(l, mes, 'Despesa', resolverCat);
     const topo = categorias.slice(0, 6);
 
     const totalCaixinhas = estado.caixinhas.reduce((s, c) => s + calc.saldoCaixinha(c, estado.movimentacoes, estado.lancamentos), 0);

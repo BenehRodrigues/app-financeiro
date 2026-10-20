@@ -5,15 +5,15 @@
 /**
  * URL do Web App do Google Apps Script.
  *
- * Preenchido com a URL do seu projeto atual do Apps Script. Como o
- * endereco /macros/s/ID/exec pertence ao PROJETO do script (e nao ao
- * codigo), ele continua valido depois de publicar uma nova versao com os
- * arquivos novos de backend/.
+ * Vazio por padrao: cada dispositivo precisa apontar para o SEU servidor.
+ * Se este valor fosse fixo, qualquer pessoa que abrisse o link entraria
+ * direto no servidor de quem publicou o app.
  *
- * Se voce criar uma nova implantacao (nova URL), e so colar a nova URL na
- * tela de conexao do app — ela tem prioridade sobre este valor.
+ * Preencha aqui somente se voce quiser que o app ja venha configurado
+ * (ex.: um app pessoal so para voce). Nesse caso, quem abrir em outro
+ * dispositivo ainda podera trocar o servidor pela tela de conexao.
  */
-export const API_URL_PADRAO = 'https://script.google.com/macros/s/AKfycbzQuY_CQCKpsbwognkCtyv-k5IR8wY_OS0QWHAoj21Bl38fQ8wbriRZadNkxGTSBK4T/exec';
+export const API_URL_PADRAO = '';
 
 /** Configuracoes vindas da aba "Config" da planilha (sincronizadas pelo store). */
 export const CONFIG = {

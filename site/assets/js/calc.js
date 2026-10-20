@@ -195,16 +195,27 @@ export function agrupar(lancamentos, chave, rotulo) {
   return [...mapa.values()].sort((a, b) => b.valor - a.valor);
 }
 
-export function porCategoria(lancamentos, mes, tipo) {
+/**
+ * Quebra por categoria.
+ * @param {function} resolver opcional: (id) => nome da categoria.
+ *        Sem ele, o rotulo e o proprio ID (util para depuracao).
+ */
+export function porCategoria(lancamentos, mes, tipo, resolver) {
+  const r = resolver || ((id) => id || 'Sem categoria');
   return agrupar(
     filtrar(lancamentos, { mes, tipo }),
     'CategoriaID',
-    (l) => l.CategoriaID || 'Sem categoria'
+    (l) => r(l.CategoriaID)
   );
 }
 
-export function porConta(lancamentos, mes, tipo) {
-  return agrupar(filtrar(lancamentos, { mes, tipo }), 'ContaID', (l) => l.ContaID || 'Sem conta');
+export function porConta(lancamentos, mes, tipo, resolver) {
+  const r = resolver || ((id) => id || 'Sem conta');
+  return agrupar(
+    filtrar(lancamentos, { mes, tipo }),
+    'ContaID',
+    (l) => r(l.ContaID)
+  );
 }
 
 export function porForma(lancamentos, mes) {

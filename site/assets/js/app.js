@@ -245,6 +245,23 @@ const ACOES_GLOBAIS = {
     window.location.reload();
   },
 
+  /** Apaga o servidor e a sessao deste navegador (aparelho compartilhado). */
+  async desconectar() {
+    const ok = await confirmar({
+      titulo: 'Desconectar',
+      mensagem: 'Serao apagados deste navegador: o servidor configurado e a sua sessao. ' +
+        'Na proxima abertura voce vera a tela para colar a URL do Web App novamente.',
+      textoOk: 'Desconectar',
+      perigo: true
+    });
+    if (!ok) return;
+    localStorage.removeItem(CHAVES.API_URL);
+    localStorage.removeItem(CHAVES.TOKEN);
+    localStorage.removeItem(CHAVES.USUARIO);
+    fecharModal();
+    window.location.reload();
+  },
+
   'alternar-tema'() {
     const atual = document.documentElement.getAttribute('data-tema') === 'claro' ? 'escuro' : 'claro';
     aplicarTema(atual);
@@ -329,7 +346,7 @@ function abrirPerfil() {
       <div class="btn-grupo">
         <button class="btn" data-action="trocar-senha">Alterar minha senha</button>
         ${store.ehAdmin ? '<button class="btn" data-action="ir-acesso">Gerenciar acessos</button>' : ''}
-        <button class="btn btn-perigo" data-action="sair">Sair</button>
+        <button class="btn btn-perigo" data-action="desconectar">Desconectar</button>
       </div>`,
     rodape: `<button type="button" class="btn" data-fechar>Fechar</button>`
   });

@@ -24,9 +24,10 @@ export default {
     for (let i = 1; i <= 12; i++) meses.push(`${ano}-${String(i).padStart(2, '0')}`);
     const serie = calc.serieMensal(l, 12, `${ano}-12`);
 
-    const catDespesa = calc.porCategoria(doAno, '', 'Despesa');
-    const catReceita = calc.porCategoria(doAno, '', 'Receita');
-    const contas = calc.porConta(doAno, '', 'Despesa');
+    const resolverCat = (id) => store.nomeCategoria(id);
+    const catDespesa = calc.porCategoria(doAno, '', 'Despesa', resolverCat);
+    const catReceita = calc.porCategoria(doAno, '', 'Receita', resolverCat);
+    const contas = calc.porConta(doAno, '', 'Despesa', (id) => store.nomeConta(id));
     const formas = calc.porForma(doAno);
 
     const maiores = [...doAno].sort((a, b) => (Number(b.Valor) || 0) - (Number(a.Valor) || 0)).slice(0, 10);

@@ -5,6 +5,7 @@
  * ===================================================================== */
 import { esc, icone } from '../utils.js';
 import { getApiUrl, setApiUrl, chamar } from '../api.js';
+import { CHAVES } from '../config.js';
 import { toast } from '../ui.js';
 
 let modo = 'login';           // login | api | criar-planilha | admin
@@ -127,6 +128,7 @@ const view = {
           <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
             <button class="link-btn" data-action="tela-admin">Criar outro acesso</button>
             <button class="link-btn" data-action="tela-api">Trocar servidor</button>
+            <button class="link-btn" data-action="esquecer-servidor">Esquecer este servidor</button>
           </div>
 
           <details class="detalhes-tecnicos">
@@ -161,9 +163,14 @@ const view = {
               <label class="campo-rotulo" for="api">URL do Web App</label>
               <input class="input" id="api" name="api" type="url" required
                      placeholder="https://script.google.com/macros/s/XXXX/exec"
-                     value="${esc(getApiUrl())}"
+                     value=""
+                     autocomplete="off" spellcheck="false"
                      style="font-size:12px;font-family:var(--mono)">
               <span class="erro-campo" id="erro-api"></span>
+              <span class="num-pequeno">
+                Campo sempre vazio: cada dispositivo aponta para o seu proprio servidor.
+                O que voce digitar fica salvo apenas neste navegador.
+              </span>
             </div>
             <button class="btn btn-primario btn-bloco" type="submit">Testar e salvar</button>
           </form>
@@ -319,6 +326,18 @@ const view = {
       mensagem = '';
       statusChecado = true;
       rerender();
+    },
+
+    /** Apaga o servidor guardado (e a sessao) deste navegador. */
+    'esquecer-servidor'() {
+      localStorage.removeItem(CHAVES.API_URL);
+      localStorage.removeItem(CHAVES.TOKEN);
+      localStorage.removeItem(CHAVES.USUARIO);
+      statusChecado = false;
+      modo = 'api';
+      mensagem = 'Servidor esquecido. Cole a URL do Web App que voce quer usar.';
+      rerender();
+      toast('Servidor removido deste navegador.', 'sucesso');
     },
 
     async testarApi(form) {
