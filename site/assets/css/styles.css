@@ -99,8 +99,13 @@ a { color: var(--info); }
 .login-card {
   width: 100%; max-width: 420px; background: var(--surface);
   border: 1px solid var(--border); border-radius: 20px; padding: 32px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow); position: relative;
 }
+.login-tema {
+  position: absolute; top: 16px; right: 16px;
+  color: var(--text-mute); background: transparent; border-color: transparent;
+}
+.login-tema:hover { background: var(--surface-3); color: var(--text); }
 .login-logo {
   width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
   background: linear-gradient(140deg, var(--primary), #0ea5e9); color: #04121f;

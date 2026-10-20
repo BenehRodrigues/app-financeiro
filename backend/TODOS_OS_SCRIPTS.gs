@@ -20,7 +20,7 @@
 // ====================================================================
 
 /* =====================================================================
- * Utils.gs â€” Schema das abas + utilitarios (tipos, IO, senha, sessao)
+ * Utils.gs — Schema das abas + utilitarios (tipos, IO, senha, sessao)
  *
  * Cole este arquivo no editor do Google Apps Script como "Utils.gs"
  * (Extensions > Apps Script > Arquivos > + > Script)
@@ -31,7 +31,7 @@ var PROP_SS = 'SPREADSHEET_ID';   // Script Property com o ID da planilha
 var SESSAO_DIAS = 30;             // validade da sessao (dias)
 
 /* ---------------------------------------------------------------------
- * SCHEMA â€” definicao unica de todas as abas.
+ * SCHEMA — definicao unica de todas as abas.
  * Formato: [nomeDaColuna, tipo]
  * Tipos: texto | longa | num | moeda | data | dt | bool | mes
  * ------------------------------------------------------------------- */
@@ -554,7 +554,7 @@ function logAcao(usuario, acao, entidade, entidadeId, detalhes) {
 // ====================================================================
 
 /* =====================================================================
- * Setup.gs â€” Cria a planilha (do zero), formata e popula o banco de dados.
+ * Setup.gs — Cria a planilha (do zero), formata e popula o banco de dados.
  *
  * Cole este arquivo no editor do Google Apps Script como "Setup.gs"
  * ===================================================================== */
@@ -1001,7 +1001,7 @@ function revogarSessoes() {
 // ====================================================================
 
 /* =====================================================================
- * Code.gs â€” API do aplicativo (Web App do Google Apps Script)
+ * Code.gs — API do aplicativo (Web App do Google Apps Script)
  *
  * O front-end (GitHub Pages) fala com este endereco:
  *   https://script.google.com/macros/s/XXXX/exec

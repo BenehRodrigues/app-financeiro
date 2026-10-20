@@ -1,4 +1,4 @@
-/* =====================================================================
+﻿/* =====================================================================
  * views/login.js — assistente de conexao, criacao da planilha e login
  *
  * Fluxo: conectar a API -> criar planilha (se preciso) -> criar admin -> entrar
@@ -53,6 +53,14 @@ const view = {
     return this.renderLogin(url);
   },
 
+  /** Botao de tema, disponivel tambem antes do login. */
+  botaoTema() {
+    const claro = document.documentElement.getAttribute('data-tema') === 'claro';
+    return `<button type="button" class="btn-icone login-tema" data-action="tema-tela"
+      title="${claro ? 'Mudar para o tema escuro' : 'Mudar para o tema claro'}"
+      aria-label="Alternar tema">${icone(claro ? 'lua' : 'sol')}</button>`;
+  },
+
   afterRender() {
     const f = document.getElementById('form-login');
     if (f) {
@@ -92,6 +100,7 @@ const view = {
     return `
       <div class="login-wrap">
         <div class="login-card">
+          ${this.botaoTema()}
           <div class="login-logo">₣</div>
           <h1>Controle Financeiro</h1>
           <p class="sub">Entre com o e-mail e a senha cadastrados na planilha.</p>
@@ -137,6 +146,7 @@ const view = {
     return `
       <div class="login-wrap">
         <div class="login-card">
+          ${this.botaoTema()}
           <div class="login-logo">₣</div>
           <h1>Conectar ao servidor</h1>
           <p class="sub">Cole a URL do Web App do Google Apps Script para conectar o app a planilha.</p>
@@ -171,6 +181,7 @@ const view = {
     return `
       <div class="login-wrap">
         <div class="login-card">
+          ${this.botaoTema()}
           <div class="login-logo">₣</div>
           <h1>Criar a planilha</h1>
           <p class="sub">
@@ -209,6 +220,7 @@ const view = {
     return `
       <div class="login-wrap">
         <div class="login-card">
+          ${this.botaoTema()}
           <div class="login-logo">₣</div>
           <h1>Criar acesso administrador</h1>
           <p class="sub">A planilha ainda nao tem nenhum usuario. Crie o primeiro acesso.</p>
@@ -261,6 +273,13 @@ const view = {
         mensagem = dicaDeConexao(e.message);
         rerender();
       }
+    },
+
+    'tema-tela'() {
+      const claro = document.documentElement.getAttribute('data-tema') === 'claro';
+      document.documentElement.setAttribute('data-tema', claro ? 'escuro' : 'claro');
+      localStorage.setItem('fin.tema', claro ? 'escuro' : 'claro');
+      rerender();
     },
 
     async entrar(form) {
