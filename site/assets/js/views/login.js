@@ -47,7 +47,7 @@ const view = {
   render() {
     const url = getApiUrl();
 
-    if (!url) return this.renderApi();
+    if (modo === 'api' || !url) return this.renderApi();
     if (modo === 'criar-planilha') return this.renderCriarPlanilha();
     if (modo === 'admin') return this.renderAdmin();
     return this.renderLogin(url);
@@ -143,12 +143,15 @@ const view = {
 
           ${mensagem ? `<div class="toast erro" style="margin-bottom:16px;position:static">
             <span class="ico">${icone('alerta')}</span><span>${esc(mensagem)}</span></div>` : ''}
+          ${subMensagem ? `<div class="toast info" style="margin-bottom:16px;position:static">
+            <span class="ico">${icone('info')}</span><span>${esc(subMensagem)}</span></div>` : ''}
 
           <form id="form-api" style="display:grid;gap:14px">
             <div class="campo">
               <label class="campo-rotulo" for="api">URL do Web App</label>
               <input class="input" id="api" name="api" type="url" required
                      placeholder="https://script.google.com/macros/s/XXXX/exec"
+                     value="${esc(getApiUrl())}"
                      style="font-size:12px;font-family:var(--mono)">
               <span class="erro-campo" id="erro-api"></span>
             </div>
