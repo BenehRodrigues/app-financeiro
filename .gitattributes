@@ -1,0 +1,12 @@
+# Mantem as quebras de linha consistentes (LF) em todos os arquivos
+* text=auto eol=lf
+
+# Binarios
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.xlsx binary

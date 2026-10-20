@@ -1,0 +1,25 @@
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+
+# Ambiente
+.env
+.env.local
+
+# Node (caso use ferramentas locais no futuro)
+node_modules/
+package-lock.json
+
+# Cache
+.cache/
+*.tsbuildinfo

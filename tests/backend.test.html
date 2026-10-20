@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Teste do backend (Apps Script)</title></head>
+<body>
+<pre id="out">executando…</pre>
+<script>
+/* =====================================================================
+ * Stubs minimos do Google Apps Script + suite de testes do backend
+ * ===================================================================== */
+const OUT = [];
+function log(...a) { OUT.push(a.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' ')); }
+let okCount = 0, failCount = 0;
+function check(nome, cond, extra) {
+  if (cond) { okCount++; log('  OK   ' + nome); }
+  else { failCount++; log('  FALHA ' + nome + (extra !== undefined ? ' :: ' + JSON.stringify(extra) : '')); }
+}
+function eq(nome, got, expected) {
+  const g = JSON.stringify(got), e = JSON.stringify(expected);
+  check(nome + ' (obtido ' + g + ')', g === e, { got: got, expected: expected });
+}
+
+const FAKE = { ss: null, props: {}, uuid: 0, ativa: null, prompts: [] };
+
+class FakeRange {
+  constructor(sheet, row, col, nr, nc) { this.sheet = sheet; this.row = row; this.col = col; this.nr = nr; this.nc = nc; }
+  getValues() {
+    const d = this.sheet.data, out = [];
+    for (let r = 0; r < this.nr; r++) {
+      const linha = [];
+      for (let c = 0; c < this.nc; c++) {
+        const v = (d[this.row - 1 + r] || [])[this.col - 1 + c];
+        linha.push(v === undefined ? '' : v);
+      }
+      out.push(linha);
+    }
+    return out;
+  }
+  setValues(vals) {
+    const d = this.sheet.data;
+    for (let r = 0; r < this.nr; r++) {
+      const ri = this.row - 1 + r;
+      while (d.length <= ri) d.push([]);
+      while (d[ri].length < this.col - 1 + this.nc) d[ri].push('');
+      for (let c = 0; c < this.nc; c++) d[ri][this.col - 1 + c] = vals[r][c];
+    }
+    return this;
+  }
+  setBackground() { return this; } setFontColor() { return this; } setFontWeight() { return this; }
+  setFontSize() { return this; } setVerticalAlignment() { return this; } setNumberFormat() { return this; }
+  setDataValidation() { return this; } setHorizontalAlignment() { return this; }
+}
+class FakeSheet {
+  constructor(name) { this.name = name; this.data = []; }
+  getName() { return this.name; }
+  getLastRow() { return this.data.length; }
+  getLastColumn() { let m = 0; this.data.forEach(l => { if (l.length > m) m = l.length; }); return m; }
+  getMaxColumns() { return Math.max(this.getLastColumn(), 1); }
+  getMaxRows() { return Math.max(this.data.length, 100); }
+  getRange(r, c, nr, nc) { return new FakeRange(this, r, c, nr, nc); }
+  setFrozenRows() { return this; } setColumnWidth() { return this; } setRowHeight() { return this; }
+  insertColumnsAfter() { return this; }
+  appendRow(values) {
+    const maxLen = this.getMaxColumns();
+    const linha = [];
+    for (let i = 0; i < Math.max(maxLen, values.length); i++) linha.push(values[i] === undefined ? '' : values[i]);
+    this.data.push(linha); return this;
+  }
+  deleteRow(r) { this.data.splice(r - 1, 1); return this; }
+  deleteRows(r, n) { this.data.splice(r - 1, n); return this; }
+  getDataValidations() { return []; }
+}
+class FakeSS {
+  constructor(name) { this.name = name; this.sheets = []; }
+  getName() { return this.name; }
+  getId() { return 'fake-id-123'; }
+  getUrl() { return 'https://docs.google.com/spreadsheets/d/' + this.getId() + '/edit'; }
+  setSpreadsheetTimeZone(tz) { this.tz = tz; }
+  getSheetByName(n) { return this.sheets.find(s => s.name === n) || null; }
+  insertSheet(n) { const s = new FakeSheet(n); this.sheets.push(s); return s; }
+  getSheets() { return this.sheets; }
+  moveActiveSheet() { return this; } setActiveSheet() { return this; }
+}
+
+window.SpreadsheetApp = {
+  openById: () => { if (!FAKE.ss) FAKE.ss = new FakeSS('Planilha Teste'); return FAKE.ss; },
+  create: (nome) => { FAKE.ss = new FakeSS(nome || 'Nova Planilha'); return FAKE.ss; },
+  getActiveSpreadsheet: () => FAKE.ativa || null,
+  getUi: () => ({
+    ButtonSet: { OK: 1, CANCEL: 2, OK_CANCEL: 3 },
+    Button: { OK: 1, CANCEL: 2 },
+    createMenu: () => ({ addItem: () => ({ addSeparator: () => ({ addItem: () => ({ addToUi: () => {} }) }) }), addToUi: () => {} }),
+    prompt: () => ({ getSelectedButton: () => 1, getResponseText: () => (FAKE.prompts.length ? FAKE.prompts.shift() : 'teste') }),
+    alert: (m) => { log('  [ui.alert] ' + String(m).split('\n')[0]); }
+  }),
+  newDataValidation: () => ({ requireValueInList: () => ({ setAllowInvalid: () => ({ build: () => ({}) }) }) }),
+  getActiveSpreadsheet: () => FAKE.ativa || null
+};
+window.Utilities = {
+  DigestAlgorithm: { SHA_256: 'SHA_256' },
+  Charset: { UTF_8: 'UTF_8' },
+  getUuid: () => 'uuid-' + (++FAKE.uuid) + '-0000-4000-8000-000000000000',
+  computeDigest: (algo, str) => {
+    let h1 = 0x811c9dc5, h2 = 0x01000193;
+    for (let i = 0; i < str.length; i++) {
+      h1 = ((h1 ^ str.charCodeAt(i)) * 16777619) >>> 0;
+      h2 = ((h2 + str.charCodeAt(i) * (i + 7)) * 2246822519) >>> 0;
+    }
+    const out = [];
+    for (let i = 0; i < 32; i++) out.push((i % 2 ? h2 >>> ((i % 4) * 8) : h1 >>> ((i % 4) * 8)) & 0xff);
+    return out;
+  },
+  formatDate: (d, tz, fmt) => {
+    const p = (n) => String(n).padStart(2, '0');
+    const y = d.getFullYear(), m = p(d.getMonth() + 1), dd = p(d.getDate());
+    if (fmt === 'yyyy-MM-dd') return y + '-' + m + '-' + dd;
+    if (fmt === 'yyyy-MM') return y + '-' + m;
+    if (fmt === 'yyyy-MM-dd HH:mm:ss') return y + '-' + m + '-' + dd + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    return String(d);
+  },
+  base64Encode: (s) => btoa(unescape(encodeURIComponent(s)))
+};
+window.PropertiesService = {
+  getScriptProperties: () => ({
+    getProperty: (k) => (FAKE.props[k] === undefined ? null : FAKE.props[k]),
+    setProperty: (k, v) => { FAKE.props[k] = v; },
+    deleteProperty: (k) => { delete FAKE.props[k]; }
+  })
+};
+window.ContentService = {
+  MimeType: { JSON: 'application/json' },
+  createTextOutput: (t) => ({ text: t, setMimeType: function () { return this; } })
+};
+window.Session = { getActiveUser: () => ({ getEmail: () => 'teste@local' }) };
+
+async function carregarFonte(url) {
+  try { const r = await fetch(url); if (r.ok) return await r.text(); } catch (e) { /* ignora */ }
+  return null;
+}
+
+(async function run() {
+  try {
+    const s1 = await carregarFonte('../backend/Utils.gs');
+    const s2 = await carregarFonte('../backend/Setup.gs');
+    const s3 = await carregarFonte('../backend/Code.gs');
+    log('fontes: Utils=' + (s1 ? s1.length : 'FALHOU') + ' Setup=' + (s2 ? s2.length : 'FALHOU') + ' Code=' + (s3 ? s3.length : 'FALHOU'));
+    if (!s1 || !s2 || !s3) throw new Error('nao consegui ler os .gs');
+
+    const api = new Function(s1 + '\n' + s2 + '\n' + s3 + `
+      return {
+        SCHEMA, configurarPlanilha, lerLinhas, hashSenha, validarSenha, competenciaDe,
+        addMesesData, toCell, fromCell, bytesToHex, agora, autenticar, doPost,
+        criarNovaPlanilha, configurarPlanilha, criarAdminPeloMenu, diagnostico, getSS
+      };`)();
+
+    /** Chama a API pelo caminho real (doPost) e devolve o JSON. */
+    function call(acao, payload) {
+      const r = api.doPost({ postData: { contents: JSON.stringify(Object.assign({ acao: acao }, payload || {})) } });
+      return JSON.parse(r.text);
+    }
+
+    log('');
+    log('== SCHEMA ==');
+    check('9 abas definidas', Object.keys(api.SCHEMA).length === 9, Object.keys(api.SCHEMA));
+    check('Lancamentos tem 20 colunas', api.SCHEMA.Lancamentos.colunas.length === 20);
+
+    log('');
+    log('== SETUP ==');
+    FAKE.props['SPREADSHEET_ID'] = 'fake';
+    api.configurarPlanilha();
+    const ss = FAKE.ss;
+    log('abas: ' + ss.getSheets().map(s => s.getName()).join(', '));
+    check('aba Config existe', !!ss.getSheetByName('Config'));
+    check('aba Lancamentos existe', !!ss.getSheetByName('Lancamentos'));
+    const cab = ss.getSheetByName('Lancamentos').data[0];
+    eq('cabecalho Lancamentos[0]', cab[0], 'ID');
+    eq('cabecalho Lancamentos[19]', cab[19], 'CriadoPor');
+    check('categorias semeadas', api.lerLinhas('Categorias').length > 20);
+    check('contas semeadas', api.lerLinhas('Contas').length === 4);
+    check('caixinhas semeadas', api.lerLinhas('Caixinhas').length === 3);
+    check('config semeada', api.lerLinhas('Config').length >= 8);
+
+    log('');
+    log('== SENHA E TIPOS ==');
+    const salt = 'abc123';
+    const h = api.hashSenha('segredo', salt);
+    check('hash 64 chars hex', /^[0-9a-f]{64}$/.test(h), h);
+    eq('hash deterministico', api.hashSenha('segredo', salt), h);
+    check('senha diferente -> hash diferente', api.hashSenha('outra', salt) !== h);
+    eq('competenciaDe', api.competenciaDe('2026-10-15'), '2026-10');
+    eq('addMesesData 31/01 + 1', api.competenciaDe(api.addMesesData('2026-01-31', 1)), '2026-02');
+    eq('addMesesData 15/12 + 2', api.competenciaDe(api.addMesesData('2026-12-15', 2)), '2027-02');
+    eq('toCell moeda com virgula', api.toCell('1234,56', 'moeda'), 1234.56);
+    eq('toCell bool SIM', api.toCell('sim', 'bool'), 'SIM');
+    eq('toCell bool texto', api.toCell('qualquer', 'bool'), 'NAO');
+    eq('fromCell data', api.fromCell(new Date(2026, 9, 15, 12), 'data'), '2026-10-15');
+    eq('fromCell moeda', api.fromCell('99,50', 'moeda'), 99.5);
+
+    log('');
+    log('== LOGIN ==');
+    let r = call('criaradmininicial', { nome: 'Ana', email: 'ana@teste.com', senha: 'segredo1' });
+    check('admin inicial criado', r.ok === true, r);
+    let r2 = call('criaradmininicial', { nome: 'B', email: 'b@teste.com', senha: 'segredo1' });
+    check('segundo admin bloqueado', r2.ok === false, r2);
+    const loginOk = call('login', { email: 'ana@teste.com', senha: 'segredo1' });
+    check('login senha correta', loginOk.ok === true, loginOk);
+    const token = loginOk.token;
+    check('token gerado', !!token);
+    check('login senha errada', call('login', { email: 'ana@teste.com', senha: 'errada' }).ok === false);
+    check('login e-mail inexistente', call('login', { email: 'ninguem@teste.com', senha: 'segredo1' }).ok === false);
+    check('login case-insensitive', call('login', { email: 'ANA@TESTE.COM', senha: 'segredo1' }).ok === true);
+    check('token invalido rejeitado', call('bootstrap', { token: 'invalido' }).ok === false);
+    check('sem token rejeitado', call('bootstrap', {}).ok === false);
+
+    const boot = call('bootstrap', { token: token });
+    check('bootstrap ok', boot.ok === true);
+    check('bootstrap traz categorias', boot.categorias.length > 20);
+    check('bootstrap traz config', !!boot.config.nome_app);
+    eq('bootstrap traz perfil', boot.usuario.Perfil, 'admin');
+
+    log('');
+    log('== LANCAMENTOS ==');
+    const catId = boot.categorias.find(c => c.Tipo === 'Despesa').ID;
+    const contaId = boot.contas[0].ID;
+    const L = call('salvarlancamento', {
+      token: token, dados: {
+        Data: '2026-10-15', Tipo: 'Despesa', Valor: '1500,50', Descricao: 'Aluguel',
+        CategoriaID: catId, ContaID: contaId, FormaPagamento: 'Credito',
+        Parcelas: 1, Status: 'Pago', Recorrente: 'SIM', Fixo: 'SIM'
+      }
+    });
+    check('lancamento criado', L.ok === true && !!L.id, L);
+    const boot2 = call('bootstrap', { token: token });
+    const criado = boot2.lancamentos.find(l => l.ID === L.id);
+    eq('valor gravado', criado.Valor, 1500.5);
+    eq('competencia preenchida', criado.Competencia, '2026-10');
+    eq('recorrente gravado', criado.Recorrente, 'SIM');
+    eq('fixo gravado', criado.Fixo, 'SIM');
+    eq('criado por', criado.CriadoPor, 'ana@teste.com');
+    check('descricao obrigatoria', call('salvarlancamento', { token: token, dados: { Data: '2026-10-15', Tipo: 'Despesa', Valor: 10, Descricao: '' } }).ok === false);
+    check('valor tem de ser > 0', call('salvarlancamento', { token: token, dados: { Data: '2026-10-15', Tipo: 'Despesa', Valor: 0, Descricao: 'x' } }).ok === false);
+    check('data obrigatoria', call('salvarlancamento', { token: token, dados: { Data: 'x', Tipo: 'Despesa', Valor: 10, Descricao: 'x' } }).ok === false);
+
+    log('');
+    log('== PARCELAMENTO ==');
+    const parc = call('salvarlancamento', {
+      token: token, dados: {
+        Data: '2026-10-10', Tipo: 'Despesa', Valor: 3000, Descricao: 'Notebook',
+        CategoriaID: catId, ContaID: contaId, Parcelas: 3, Status: 'Pago'
+      }
+    });
+    check('retorna 3 ids', parc.ids && parc.ids.length === 3, parc);
+    const boot3 = call('bootstrap', { token: token });
+    const grupo = boot3.lancamentos.filter(l => l.GrupoParcelas === parc.grupo);
+    check('3 linhas gravadas', grupo.length === 3, grupo.length);
+    eq('parcela 1', grupo.find(l => l.ParcelaAtual === 1).Competencia, '2026-10');
+    eq('parcela 2', grupo.find(l => l.ParcelaAtual === 2).Competencia, '2026-11');
+    eq('parcela 3', grupo.find(l => l.ParcelaAtual === 3).Competencia, '2026-12');
+    const delGrupo = call('excluirlancamento', { token: token, id: grupo[0].ID, excluirGrupo: true });
+    check('exclui grupo inteiro', delGrupo.ok === true && delGrupo.removidas === 3, delGrupo);
+    const del = call('excluirlancamento', { token: token, id: L.id });
+    check('exclui lancamento', del.ok === true && del.removidas === 1, del);
+
+    log('');
+    log('== CATEGORIAS E CONTAS ==');
+    call('salvarlancamento', { token: token, dados: { Data: '2026-10-15', Tipo: 'Despesa', Valor: 50, Descricao: 'Teste', CategoriaID: catId, ContaID: contaId } });
+    check('categoria em uso nao exclui', call('excluircategoria', { token: token, id: catId }).ok === false);
+    const novaCat = call('salvarcategoria', { token: token, dados: { Nome: 'Teste QA', Tipo: 'Despesa', Grupo: 'Outros', Cor: '#123456', Ativo: 'SIM' } });
+    check('cria categoria', novaCat.ok === true, novaCat);
+    check('bloqueia duplicada', call('salvarcategoria', { token: token, dados: { Nome: 'teste qa', Tipo: 'Despesa' } }).ok === false);
+    const boot4 = call('bootstrap', { token: token });
+    eq('cor gravada', boot4.categorias.find(c => c.ID === novaCat.id).Cor, '#123456');
+    const novaConta = call('salvarconta', { token: token, dados: { Nome: 'Conta QA', Tipo: 'Conta Corrente', Limite: 1000, DiaVencimento: 10 } });
+    check('cria conta', novaConta.ok === true, novaConta);
+    const bootC = call('bootstrap', { token: token });
+    const contaQa = bootC.contas.find(c => c.ID === novaConta.id);
+    eq('limite da conta', contaQa.Limite, 1000);
+    eq('dia de vencimento', contaQa.DiaVencimento, 10);
+    check('conta em uso nao exclui', call('excluirconta', { token: token, id: contaId }).ok === false);
+
+    log('');
+    log('== CAIXINHAS ==');
+    const cx = call('salvarcaixinha', { token: token, dados: { Nome: 'Viagem QA', Meta: 5000, Prazo: '2027-01', SaldoInicial: 100, Ativo: 'SIM' } });
+    check('cria caixinha', cx.ok === true, cx);
+    call('movimentarcaixinha', { token: token, dados: { CaixinhaID: cx.id, Tipo: 'Entrada', Data: '2026-10-01', Valor: 250, Descricao: 'Aporte' } });
+    call('movimentarcaixinha', { token: token, dados: { CaixinhaID: cx.id, Tipo: 'Saida', Data: '2026-10-05', Valor: 50, Descricao: 'Resgate' } });
+    const boot5 = call('bootstrap', { token: token });
+    const movs = boot5.movimentacoes.filter(m => m.CaixinhaID === cx.id);
+    check('2 movimentacoes', movs.length === 2, movs.length);
+    const saldo = boot5.caixinhas.find(c => c.ID === cx.id).SaldoInicial +
+      movs.reduce((s, m) => s + (m.Tipo === 'Saida' ? -m.Valor : m.Valor), 0);
+    eq('saldo da caixinha', saldo, 300);
+    check('movimento sem valor falha', call('movimentarcaixinha', { token: token, dados: { CaixinhaID: cx.id, Tipo: 'Entrada', Valor: 0 } }).ok === false);
+    check('movimento em caixinha inexistente falha', call('movimentarcaixinha', { token: token, dados: { CaixinhaID: 'nao-existe', Tipo: 'Entrada', Valor: 10 } }).ok === false);
+
+    log('');
+    log('== PERMISSOES ==');
+    check('cria editor', call('salvarusuario', { token: token, dados: { Nome: 'Beto', Email: 'beto@teste.com', Perfil: 'editor', Ativo: 'SIM', Senha: 'senha123' } }).ok === true);
+    check('cria leitor', call('salvarusuario', { token: token, dados: { Nome: 'Cida', Email: 'cida@teste.com', Perfil: 'leitor', Ativo: 'SIM', Senha: 'senha123' } }).ok === true);
+    check('e-mail duplicado bloqueado', call('salvarusuario', { token: token, dados: { Nome: 'X', Email: 'beto@teste.com', Perfil: 'leitor', Senha: 'senha123' } }).ok === false);
+    check('perfil invalido cai para leitor', call('salvarusuario', { token: token, dados: { Nome: 'Z', Email: 'z@teste.com', Perfil: 'superadmin', Senha: 'senha123' } }).ok === true);
+
+    const tLeitor = call('login', { email: 'cida@teste.com', senha: 'senha123' }).token;
+    check('leitor nao escreve', call('salvarlancamento', { token: tLeitor, dados: { Data: '2026-10-15', Tipo: 'Despesa', Valor: 10, Descricao: 'x' } }).ok === false);
+    check('leitor le bootstrap', call('bootstrap', { token: tLeitor }).ok === true);
+    check('leitor nao lista usuarios', call('listarusuarios', { token: tLeitor }).ok === false);
+    const lista = call('listarusuarios', { token: token });
+    check('admin lista usuarios', lista.ok === true && lista.usuarios.length === 4, lista.usuarios && lista.usuarios.length);
+    check('lista nao expoe hash', !JSON.stringify(lista).includes('SenhaHash') && !JSON.stringify(lista).includes('Salt'));
+
+    const tEditor = call('login', { email: 'beto@teste.com', senha: 'senha123' }).token;
+    check('editor escreve', call('salvarlancamento', { token: tEditor, dados: { Data: '2026-10-15', Tipo: 'Despesa', Valor: 10, Descricao: 'x' } }).ok === true);
+    check('editor nao gerencia usuarios', call('salvarusuario', { token: tEditor, dados: { Nome: 'Q', Email: 'q@teste.com', Perfil: 'leitor', Senha: 'senha123' } }).ok === false);
+    check('editor nao salva config', call('salvarconfig', { token: tEditor, chave: 'x', valor: 'y' }).ok === false);
+    check('admin nao pode se excluir', call('excluirusuario', { token: token, id: boot.usuario.ID }).ok === false);
+
+    log('');
+    log('== SENHA DO USUARIO ==');
+    check('troca de senha ok', call('trocarsenha', { token: tLeitor, senhaAtual: 'senha123', senhaNova: 'novasenha' }).ok === true);
+    check('login com nova senha', call('login', { email: 'cida@teste.com', senha: 'novasenha' }).ok === true);
+    check('login com senha antiga falha', call('login', { email: 'cida@teste.com', senha: 'senha123' }).ok === false);
+    check('sessao antiga revogada', call('bootstrap', { token: tLeitor }).ok === false);
+    check('senha atual errada rejeitada', call('trocarsenha', { token: call('login', { email: 'cida@teste.com', senha: 'novasenha' }).token, senhaAtual: 'errada', senhaNova: 'outra123' }).ok === false);
+
+    log('');
+    log('== CONFIG ==');
+    check('salva config', call('salvarconfig', { token: token, chave: 'simbolo_moeda', valor: 'US$' }).ok === true);
+    eq('config lida', call('bootstrap', { token: token }).config.simbolo_moeda, 'US$');
+
+    log('');
+    log('== HTTP ==');
+    const rJson = JSON.parse(api.doPost({ postData: { contents: 'nao e json' } }).text);
+    check('JSON invalido -> erro', rJson.ok === false);
+    check('acao desconhecida -> erro', call('acao-inexistente', { token: token }).ok === false);
+    const st = call('status');
+    check('status pronto', st.pronto === true, st);
+    check('status conta usuarios', st.usuarios === 4, st.usuarios);
+
+    log('');
+    log('== CRIAR PLANILHA DO ZERO (script standalone) ==');
+    FAKE.props = {}; FAKE.ss = null; FAKE.ativa = null;
+    FAKE.prompts = ['Meu Financeiro', 'Ana', 'ana@local.com', 'senha123'];
+    api.criarNovaPlanilha();
+    check('planilha foi criada', FAKE.ss !== null);
+    check('nome da planilha', FAKE.ss && FAKE.ss.getName() === 'Meu Financeiro', FAKE.ss && FAKE.ss.getName());
+    check('abas criadas na nova planilha', !!(FAKE.ss && FAKE.ss.getSheetByName('Lancamentos')));
+    check('abas faltando = 0', ['Config','Acessos','Categorias','Contas','Lancamentos','Caixinhas','Movimentacoes','Sessoes','Log']
+      .every(function (n) { return !!FAKE.ss.getSheetByName(n); }));
+    check('SPREADSHEET_ID salvo', FAKE.props['SPREADSHEET_ID'] === FAKE.ss.getId(), FAKE.props['SPREADSHEET_ID']);
+    check('admin criado na nova planilha', api.lerLinhas('Acessos').length === 1, api.lerLinhas('Acessos').length);
+    check('categorias semeadas na nova planilha', api.lerLinhas('Categorias').length > 20);
+    const loginNovo = call('login', { email: 'ana@local.com', senha: 'senha123' });
+    check('login funciona na planilha nova', loginNovo.ok === true, loginNovo);
+
+    log('');
+    log('== FALLBACK: SCRIPT VINCULADO A UMA PLANILHA ==');
+    FAKE.props = {}; FAKE.ss = null;
+    FAKE.ativa = new FakeSS('Planilha Do Container');
+    FAKE.ss = FAKE.ativa;
+    api.configurarPlanilha({ silencioso: true });
+    check('usa a planilha ativa sem property', FAKE.props['SPREADSHEET_ID'] === FAKE.ativa.getId(), FAKE.props['SPREADSHEET_ID']);
+    check('abas criadas na planilha do container', !!FAKE.ativa.getSheetByName('Acessos'));
+
+    log('');
+    log('== SEM PLANILHA: ERRO CLARO ==');
+    FAKE.props = {}; FAKE.ss = null; FAKE.ativa = null;
+    let erroMsg = null;
+    try { api.getSS(); } catch (e) { erroMsg = e.message; }
+    check('erro orienta o caminho', !!erroMsg && erroMsg.indexOf('Criar planilha nova') >= 0, erroMsg);
+    const stSemPlanilha = call('status');
+    check('status avisa sem planilha', stSemPlanilha.semPlanilha === true && stSemPlanilha.pronto === false, stSemPlanilha);
+
+    log('');
+    log('== CRIAR PLANILHA PELO APP (acao criarplanilha) ==');
+    FAKE.props = {}; FAKE.ss = null; FAKE.ativa = null;
+    const cp = call('criarplanilha', { nome: 'Planilha do App' });
+    check('app cria a planilha', cp.ok === true && cp.criado === true, cp);
+    check('9 abas criadas', cp.abas && cp.abas.length === 9, cp.abas);
+    check('url devolvida', typeof cp.url === 'string' && cp.url.indexOf('docs.google.com') > 0, cp.url);
+    check('SPREADSHEET_ID gravado', FAKE.props['SPREADSHEET_ID'] === cp.id);
+    const stDepois = call('status');
+    check('status ja enxerga a planilha', stDepois.semPlanilha === false, stDepois);
+    check('ainda falta o admin', stDepois.temUsuarios === false && stDepois.pronto === false, stDepois);
+    const cp2 = call('criarplanilha', { nome: 'outra' });
+    check('nao recria se ja existe', cp2.ok === true && cp2.criado === false, cp2);
+    const adm2 = call('criaradmininicial', { nome: 'Ana', email: 'ana@app.com', senha: 'segredo1' });
+    check('admin criado na planilha do app', adm2.ok === true, adm2);
+    const stFinal = call('status');
+    check('status pronto com admin', stFinal.pronto === true && stFinal.temUsuarios === true, stFinal);
+
+  } catch (e) {
+    log('');
+    log('EXCEPTION: ' + (e && e.stack ? e.stack : e));
+    failCount++;
+  }
+
+  log('');
+  log('===== ' + okCount + ' OK / ' + failCount + ' FALHAS =====');
+  document.getElementById('out').textContent = OUT.join('\n');
+  window.__RESULT = { ok: okCount, fail: failCount, log: OUT.join('\n') };
+  document.title = 'TESTE ' + okCount + 'ok/' + failCount + 'falha';
+})();
+</script>
+</body></html>
