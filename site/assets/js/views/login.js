@@ -23,6 +23,24 @@ function rerender() {
 
 let mod = null;
 
+/**
+ * Traduz o erro do servidor em uma dica util.
+ * O caso mais comum: a URL aponta para um Web App com o backend ANTIGO
+ * (que devolvia {"ok":false,"error":"unauthorized"}).
+ */
+function dicaDeConexao(msg) {
+  const m = String(msg || '').toLowerCase();
+  if (m.includes('unauthorized') || m.includes('desconhecido') || m.includes('unknown')) {
+    return 'O servidor respondeu, mas parece ser a versao ANTIGA do backend. ' +
+      'Abra o projeto no Google Apps Script, substitua os arquivos por Utils.gs, Setup.gs e Code.gs ' +
+      '(dentro do repositorio, pasta backend/) e publique uma nova versao.';
+  }
+  if (m.includes('failed to fetch') || m.includes('networkerror')) {
+    return 'Nao consegui falar com o servidor. Confira a URL e a sua conexao.';
+  }
+  return msg || 'Nao consegui falar com o servidor.';
+}
+
 const view = {
   titulo: 'Entrar',
 
@@ -237,7 +255,7 @@ const view = {
         rerender();
       } catch (e) {
         modo = 'api';
-        mensagem = e.message || 'Nao consegui falar com o servidor.';
+        mensagem = dicaDeConexao(e.message);
         rerender();
       }
     },
@@ -314,7 +332,7 @@ const view = {
       } catch (e) {
         setApiUrl(anterior);
         const alvo = document.getElementById('erro-api');
-        if (alvo) alvo.textContent = e.message;
+        if (alvo) alvo.textContent = dicaDeConexao(e.message);
       }
     },
 

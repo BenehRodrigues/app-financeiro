@@ -80,7 +80,9 @@ export async function chamar(acao, dados = {}) {
   }
 
   if (!dadosResp.ok) {
-    throw new ErroApi(dadosResp.erro || 'Erro desconhecido no servidor.', dadosResp.codigo);
+    // alguns backends devolvem "error" em vez de "erro"
+    const msg = dadosResp.erro || dadosResp.error || 'Erro desconhecido no servidor.';
+    throw new ErroApi(msg, dadosResp.codigo || dadosResp.code || 'ERRO');
   }
   return dadosResp;
 }
