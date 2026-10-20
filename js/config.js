@@ -12,7 +12,7 @@ const CONFIG = {
 
   /* URL do Web App do Google Apps Script (após "Implantar > Nova implantação")
    * Cole aqui o endereço terminado em /exec */
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/SEU_CODIGO_AQUI/exec',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzQuY_CQCKpsbwognkCtyv-k5IR8wY_OS0QWHAoj21Bl38fQ8wbriRZadNkxGTSBK4T/exec',
 
   /* Chave compartilhada com o Apps Script (Script Property: APP_KEY).
    * Troque por uma string aleatória e use a MESMA no Code.gs */
