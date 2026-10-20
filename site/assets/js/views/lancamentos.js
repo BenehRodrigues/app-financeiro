@@ -222,7 +222,7 @@ export default {
       }
     },
 
-    async alternarStatus(el) {
+    async 'alternar-status'(el) {
       const l = store.estado.lancamentos.find((x) => x.ID === el.dataset.id);
       if (!l) return;
       const novo = l.Status === 'Pago' ? 'Pendente' : 'Pago';
@@ -234,19 +234,19 @@ export default {
       }
     },
 
-    filtroTipo(el) {
+    'filtro-tipo'(el) {
       filtros.tipo = el.dataset.valor;
       paginaAtual = 1;
       window.dispatchEvent(new CustomEvent('app:repintar'));
     },
 
-    filtroStatus(el) {
+    'filtro-status'(el) {
       filtros.status = filtros.status === el.dataset.valor ? '' : el.dataset.valor;
       paginaAtual = 1;
       window.dispatchEvent(new CustomEvent('app:repintar'));
     },
 
-    filtroForma(el) {
+    'filtro-forma'(el) {
       filtros.forma = filtros.forma === el.dataset.valor ? '' : el.dataset.valor;
       paginaAtual = 1;
       window.dispatchEvent(new CustomEvent('app:repintar'));

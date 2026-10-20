@@ -89,7 +89,7 @@ export default {
 
     resgate(el) { abrirMovimentacao(el.dataset.id, 'Saida'); },
 
-    async excluirMov(el) {
+    async 'excluir-mov'(el) {
       const ok = await confirmar({
         titulo: 'Excluir movimentacao',
         mensagem: 'Remover esta movimentacao da caixinha?',

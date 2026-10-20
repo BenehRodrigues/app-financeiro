@@ -199,7 +199,12 @@ document.addEventListener('click', (e) => {
   if (ACOES_GLOBAIS[acao]) {
     e.preventDefault();
     ACOES_GLOBAIS[acao](alvo, e);
+    return;
   }
+
+  // Rede de seguranca: avisa no console quando um botao aponta para
+  // uma acao inexistente (ex.: "alternar-tema" x "alternarTema").
+  console.warn('[app] acao sem handler:', acao, alvo);
 });
 
 const ACOES_GLOBAIS = {
@@ -226,7 +231,7 @@ const ACOES_GLOBAIS = {
     window.location.reload();
   },
 
-  alternarTema() {
+  'alternar-tema'() {
     const atual = document.documentElement.getAttribute('data-tema') === 'claro' ? 'escuro' : 'claro';
     aplicarTema(atual);
     localStorage.setItem(CHAVES.TEMA, atual);
@@ -235,7 +240,7 @@ const ACOES_GLOBAIS = {
   'mes-anterior'() { mudarMes(-1); },
   'mes-proximo'() { mudarMes(1); },
 
-  abrirMenu() {
+  'abrir-menu'() {
     const l = document.getElementById('lateral');
     if (l) l.classList.toggle('aberta');
   },

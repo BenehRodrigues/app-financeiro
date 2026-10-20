@@ -282,20 +282,20 @@ const view = {
       rerender();
     },
 
-    telaLogin() {
+    'tela-login'() {
       modo = 'login';
       mensagem = '';
       statusChecado = true;
       rerender();
     },
 
-    telaAdmin() {
+    'tela-admin'() {
       modo = 'admin';
       mensagem = '';
       rerender();
     },
 
-    telaApi() {
+    'tela-api'() {
       modo = 'api';
       mensagem = '';
       statusChecado = true;
