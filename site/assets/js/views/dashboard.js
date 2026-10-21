@@ -35,7 +35,9 @@ export default {
     const taxaPoupanca = resumoMes.receitas > 0 ? (resumoMes.saldo / resumoMes.receitas) * 100 : 0;
 
     const proximos = calc.proximos(l, 30).slice(0, 8);
-    const fixos = proj.fixos;
+    // gastos fixos: somente despesas (uma receita marcada como fixa nao e gasto)
+    const fixos = calc.fixosDoMes(l, mes);
+    const fixosValor = fixos.reduce((s, f) => s + (Number(f.Valor) || 0), 0);
 
     // meses que tem dados (para avisar quando o mes selecionado esta vazio)
     const mesesComDados = [...new Set(l.map((x) => calc.competencia(x)).filter(Boolean))].sort().reverse();
@@ -73,7 +75,7 @@ export default {
           ${kpi('Despesas do mes', moeda(resumoMes.despesas), 'despesa', '', '#f43f5e')}
           ${kpi('Saldo do mes', moeda(resumoMes.saldo), resumoMes.saldo >= 0 ? 'receita' : 'despesa',
             `Taxa de poupanca ${porcento(taxaPoupanca)}`, resumoMes.saldo >= 0 ? '#22c55e' : '#f43f5e')}
-          ${kpi('Gastos fixos', moeda(proj.fixosValor), '', `${fixos.length} item(ns)`, '#38bdf8')}
+          ${kpi('Gastos fixos', moeda(fixosValor), '', `${fixos.length} item(ns)`, '#38bdf8')}
           ${kpi('Total nas caixinhas', moeda(totalCaixinhas), '', `Meta ${moeda(metaCaixinhas)}`, '#a855f7')}
           ${kpi('A pagar (pendente)', moeda(resumoMes.pendentes), 'despesa', '', '#f59e0b')}
         </div>

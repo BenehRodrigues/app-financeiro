@@ -28,9 +28,10 @@ export default {
     const catDespesa = calc.porCategoria(doAno, '', 'Despesa', resolverCat);
     const catReceita = calc.porCategoria(doAno, '', 'Receita', resolverCat);
     const contas = calc.porConta(doAno, '', 'Despesa', (id) => store.nomeConta(id));
-    const formas = calc.porForma(doAno);
+    const formas = calc.porForma(doAno, '', 'Despesa');
 
-    const maiores = [...doAno].sort((a, b) => (Number(b.Valor) || 0) - (Number(a.Valor) || 0)).slice(0, 10);
+    // APENAS despesas (receitas nao entram nesta tabela)
+    const maiores = calc.maiores(doAno, 10, 'Despesa');
     const taxa = r.receitas > 0 ? (r.saldo / r.receitas) * 100 : 0;
 
     const anos = [...new Set(l.map((x) => String(calc.competencia(x)).slice(0, 4)).filter(Boolean))].sort().reverse();
@@ -119,7 +120,7 @@ export default {
 
         <div class="grid grid-2">
           <div class="card">
-            <div class="card-cabecalho"><h3>Por forma de pagamento</h3></div>
+            <div class="card-cabecalho"><h3>Despesas por forma de pagamento</h3></div>
             <div class="card-corpo">
               ${formas.length ? `<div class="grafico">${graficos.hbarras({
                 itens: formas.map((f, i) => ({ rotulo: f.rotulo, valor: f.valor, cor: CORES[i % CORES.length] })),
@@ -129,7 +130,7 @@ export default {
           </div>
 
           <div class="card">
-            <div class="card-cabecalho"><h3>Por conta / cartao</h3></div>
+            <div class="card-cabecalho"><h3>Despesas por conta / cartao</h3></div>
             <div class="card-corpo">
               ${contas.length ? `<div class="grafico">${graficos.hbarras({
                 itens: contas.map((c) => ({
@@ -173,7 +174,10 @@ export default {
           </div>
 
           <div class="card">
-            <div class="card-cabecalho"><h3>Maiores despesas do ano</h3></div>
+            <div class="card-cabecalho">
+              <h3>Maiores despesas do ano</h3>
+              <span class="sub">${maiores.length} lancamento(s) · apenas despesas</span>
+            </div>
             <div class="card-corpo sem-pad">
               ${maiores.length ? `
               <div class="tabela-wrap">

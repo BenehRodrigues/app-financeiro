@@ -134,6 +134,33 @@ eq('resolver padrao para id desconhecido',
   calc.porCategoria(comId, '2026-10', 'Despesa', () => 'Sem categoria')[0].rotulo !== '', true);
 
 log('');
+log('== relatorios: tabelas nao podem misturar receita e despesa ==');
+const misturados = [
+  { ...base, ID: 'm1', Tipo: 'Receita', Valor: 9000, Descricao: 'Salario' },
+  { ...base, ID: 'm2', Tipo: 'Despesa', Valor: 2500, Descricao: 'Aluguel' },
+  { ...base, ID: 'm3', Tipo: 'Receita', Valor: 500, Descricao: 'Bonus' },
+  { ...base, ID: 'm4', Tipo: 'Despesa', Valor: 780, Descricao: 'Mercado' }
+];
+const maioresDesp = calc.maiores(misturados, 10, 'Despesa');
+eq('maiores despesas: 2 itens', maioresDesp.length, 2);
+check('maiores despesas: nenhum item e receita', maioresDesp.every((l) => l.Tipo === 'Despesa'));
+eq('maiores despesas: maior primeiro', maioresDesp[0].Valor, 2500);
+const maioresTudo = calc.maiores(misturados, 10, '');
+eq('maiores sem filtro: 4 itens', maioresTudo.length, 4);
+
+const formasDesp = calc.porForma(misturados, '', 'Despesa');
+check('formas de pagamento so com despesas', formasDesp.every((f) => f.valor <= 2500 + 780), formasDesp);
+eq('formas: soma das despesas', formasDesp.reduce((s, f) => s + f.valor, 0), 3280);
+
+const fixosMisturados = [
+  { ...base, ID: 'f1', Tipo: 'Despesa', Valor: 2500, Recorrente: 'SIM', Fixo: 'SIM', Descricao: 'Aluguel' },
+  { ...base, ID: 'f2', Tipo: 'Receita', Valor: 9000, Recorrente: 'SIM', Fixo: 'SIM', Descricao: 'Salario' }
+];
+const fixosSo = calc.fixosDoMes(fixosMisturados, '2026-10');
+eq('gastos fixos: so despesa', fixosSo.length, 1);
+eq('gastos fixos: valor', fixosSo[0].Valor, 2500);
+
+log('');
 log('== utils ==');
 eq('normalizarData iso', utils.normalizarData('2026-10-15'), '2026-10-15');
 eq('normalizarData br', utils.normalizarData('15/10/2026'), '2026-10-15');

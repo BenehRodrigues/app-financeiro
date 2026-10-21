@@ -218,8 +218,29 @@ export function porConta(lancamentos, mes, tipo, resolver) {
   );
 }
 
-export function porForma(lancamentos, mes) {
-  return agrupar(filtrar(lancamentos, { mes }), 'FormaPagamento', (l) => l.FormaPagamento || 'Outro');
+export function porForma(lancamentos, mes, tipo) {
+  return agrupar(
+    filtrar(lancamentos, { mes, tipo }),
+    'FormaPagamento',
+    (l) => l.FormaPagamento || 'Outro'
+  );
+}
+
+/**
+ * N maiores lancamentos de um tipo.
+ * @param {string} tipo padrao 'Despesa' (use '' para misturar)
+ */
+export function maiores(lancamentos, n = 10, tipo = 'Despesa') {
+  return (lancamentos || [])
+    .filter((l) => !tipo || String(l.Tipo) === tipo)
+    .sort((a, b) => (Number(b.Valor) || 0) - (Number(a.Valor) || 0))
+    .slice(0, n);
+}
+
+/** Gastos fixos (despesas marcadas como fixas) que valem para o mes. */
+export function fixosDoMes(lancamentos, mes) {
+  return lancamentosDoMes(lancamentos, mes, 'projetado')
+    .filter((l) => FIXO(l) && String(l.Tipo) !== 'Receita');
 }
 
 /* ---------------------------------------------------------------------
