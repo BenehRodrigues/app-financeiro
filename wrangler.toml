@@ -1,0 +1,17 @@
+name = "app-financeiro"
+main = "backend/worker.js"
+compatibility_date = "2024-11-01"
+
+# Serve o front-end estatico (pasta site/) direto pelo Cloudflare Worker
+[assets]
+directory = "./site"
+binding = "ASSETS"
+
+# Banco de dados Cloudflare D1:
+# Voce pode vincular pelo Painel da Cloudflare (Worker > Settings > Bindings > Add > D1 database > Variable name: DB)
+# OU descomentar as linhas abaixo e colar o database_id gerado ao criar o banco D1:
+#
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "app-financeiro-db"
+# database_id = "COLE_O_DATABASE_ID_AQUI"

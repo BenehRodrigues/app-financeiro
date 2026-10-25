@@ -1,9 +1,9 @@
-# API interna (Apps Script)
+# API interna (Cloudflare Workers + D1)
 
 Endpoint único:
 
 ```
-POST https://script.google.com/macros/s/{DEPLOY_ID}/exec
+POST https://<seu-worker>.workers.dev/api
 Content-Type: text/plain;charset=utf-8
 ```
 
@@ -11,8 +11,7 @@ Corpo: JSON `{ "acao": "...", "token": "...", ...params }`
 
 Resposta: `{ "ok": true, ... }` ou `{ "ok": false, "erro": "...", "codigo": "..." }`
 
-> `Content-Type` é `text/plain` de propósito: evita o preflight CORS, que o
-> Apps Script não responde. O corpo continua sendo JSON.
+> O Worker responde com cabeçalhos CORS (`Access-Control-Allow-Origin: *`) e aceita tanto `text/plain` quanto `application/json`.
 
 ---
 

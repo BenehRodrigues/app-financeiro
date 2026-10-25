@@ -28,7 +28,7 @@ export default {
         <div class="pagina-cabecalho">
           <div class="titulos">
             <h1>Controle de acesso</h1>
-            <p>Usuarios autorizados a usar o app. Os dados vivem na aba <b>Acessos</b> da planilha.</p>
+            <p>Usuarios autorizados a usar o app. Os dados vivem na tabela <b>Acessos</b> do Cloudflare D1.</p>
           </div>
           <div class="pagina-acoes">
             <button class="btn btn-pequeno" data-action="recarregar">${icone('atualizar')} Atualizar</button>

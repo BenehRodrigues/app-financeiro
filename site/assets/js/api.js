@@ -1,18 +1,45 @@
 /* =====================================================================
- * api.js — cliente do Web App do Google Apps Script
+ * api.js — cliente HTTP da API (Cloudflare Workers + D1)
  *
- * Observacao importante: usamos Content-Type "text/plain" (nao
- * "application/json") para evitar o preflight CORS, que o Google
- * Apps Script nao responde. O corpo continua sendo JSON puro.
+ * Usamos Content-Type "text/plain;charset=utf-8" com corpo JSON para
+ * evitar preflight CORS desnecessario quando o front-end roda no
+ * GitHub Pages apontando para o Worker na Cloudflare.
  * ===================================================================== */
 import { API_URL_PADRAO, CHAVES } from './config.js';
 
+function normalizarUrlApi(url) {
+  const limpo = String(url || '').trim();
+  if (!limpo) return '';
+  if (limpo.startsWith('/')) return limpo;
+  try {
+    const u = new URL(limpo);
+    if ((u.hostname.endsWith('.workers.dev') || u.hostname.endsWith('.pages.dev')) && (u.pathname === '/' || u.pathname === '')) {
+      u.pathname = '/api';
+      return u.toString();
+    }
+  } catch (e) { /* mantem como esta */ }
+  return limpo;
+}
+
 export function getApiUrl() {
-  return localStorage.getItem(CHAVES.API_URL) || API_URL_PADRAO || '';
+  const salvo = localStorage.getItem(CHAVES.API_URL);
+  if (salvo && !salvo.includes('script.google.com')) {
+    return normalizarUrlApi(salvo);
+  }
+  if (salvo && salvo.includes('script.google.com')) {
+    localStorage.removeItem(CHAVES.API_URL);
+  }
+  if (API_URL_PADRAO) return normalizarUrlApi(API_URL_PADRAO);
+
+  // Se o front-end estiver hospedado direto no Cloudflare Workers/Pages, usa /api na mesma origem
+  if (typeof location !== 'undefined' && (location.hostname.endsWith('.workers.dev') || location.hostname.endsWith('.pages.dev'))) {
+    return `${location.origin}/api`;
+  }
+  return '';
 }
 
 export function setApiUrl(url) {
-  const limpo = String(url || '').trim();
+  const limpo = normalizarUrlApi(url);
   if (limpo) localStorage.setItem(CHAVES.API_URL, limpo);
   else localStorage.removeItem(CHAVES.API_URL);
   return limpo;
@@ -35,14 +62,14 @@ export class ErroApi extends Error {
 }
 
 /**
- * Chama a API.
+ * Chama a API no Cloudflare Worker.
  * @param {string} acao  nome da acao (ex.: 'login', 'bootstrap')
  * @param {object} dados parametros extras
  */
 export async function chamar(acao, dados = {}) {
   const url = getApiUrl();
   if (!url) {
-    throw new ErroApi('API nao configurada. Informe a URL do Web App do Apps Script.', 'SEM_API');
+    throw new ErroApi('API nao configurada. Informe a URL do seu Cloudflare Worker.', 'SEM_API');
   }
 
   const corpo = JSON.stringify({ acao, token: getToken(), ...dados });
@@ -74,13 +101,12 @@ export async function chamar(acao, dados = {}) {
     dadosResp = JSON.parse(texto);
   } catch (e) {
     throw new ErroApi(
-      'Resposta invalida do servidor. A URL da API deve apontar para ".../exec" do Web App publicado.',
+      'Resposta invalida do servidor. Confira se a URL aponta para o seu Cloudflare Worker.',
       'RESPOSTA_INVALIDA'
     );
   }
 
   if (!dadosResp.ok) {
-    // alguns backends devolvem "error" em vez de "erro"
     const msg = dadosResp.erro || dadosResp.error || 'Erro desconhecido no servidor.';
     throw new ErroApi(msg, dadosResp.codigo || dadosResp.code || 'ERRO');
   }

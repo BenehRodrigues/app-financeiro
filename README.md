@@ -1,15 +1,16 @@
 # Controle Financeiro
 
-Web app de controle financeiro pessoal/familiar com **banco de dados 100% no Google Sheets**.
+Web app de controle financeiro pessoal/familiar com **banco de dados no Cloudflare D1 (SQLite serverless)** e **API em Cloudflare Workers**.
 
 - **Interface**: HTML + CSS + JavaScript puro (ES Modules) — sem build, sem dependências
-- **Backend**: Google Apps Script (Web App) — única ponte com a planilha
-- **Hospedagem**: GitHub Pages (grátis, estático)
-- **Acesso**: e-mail + senha com hash SHA-256, tabela de acessos dentro da própria planilha
+- **Backend**: Cloudflare Workers ([`backend/worker.js`](backend/worker.js))
+- **Banco de Dados**: Cloudflare D1 ([`backend/schema.sql`](backend/schema.sql))
+- **Hospedagem**: Cloudflare Workers Assets / Pages ou GitHub Pages
+- **Acesso**: e-mail + senha com hash SHA-256 (`Web Crypto API`), tabela `Acessos` no D1
 
 ```
-GitHub Pages  ──HTTP──▶  Apps Script  ──Sheets API──▶  Google Sheets
-  (frontend)              (backend)                      (banco)
+Navegador (Frontend)  ──HTTPS──▶  Cloudflare Worker  ──Binding DB──▶  Cloudflare D1
+(Workers / GH Pages)               (backend/worker.js)                 (SQLite)
 ```
 
 ---

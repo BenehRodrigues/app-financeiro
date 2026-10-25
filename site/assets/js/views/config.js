@@ -38,7 +38,7 @@ export default {
         <div class="pagina-cabecalho">
           <div class="titulos">
             <h1>Configuracoes</h1>
-            <p>Valores salvos na aba <b>Config</b> da planilha e aplicados a todos os usuarios.</p>
+            <p>Valores salvos na tabela <b>Config</b> do banco Cloudflare D1 e aplicados a todos os usuarios.</p>
           </div>
           <div class="pagina-acoes">
             <button class="btn btn-primario" data-action="salvar">${icone('ok')} Salvar</button>
@@ -66,9 +66,9 @@ export default {
         <div class="card card-pad">
           <h3 style="font-size:14.5px;margin-bottom:10px">Conexao</h3>
           <div class="campo">
-            <label class="campo-rotulo">URL da API (Web App do Apps Script)</label>
+            <label class="campo-rotulo">URL da API (Cloudflare Worker)</label>
             <input class="input" value="${esc(url)}" readonly style="font-family:var(--mono);font-size:12px">
-            <span class="num-pequeno">Esta URL fica salva apenas neste navegador.</span>
+            <span class="num-pequeno">Esta URL fica salva neste navegador (ou definida em config.js).</span>
           </div>
         </div>
 

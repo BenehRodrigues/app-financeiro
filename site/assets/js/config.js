@@ -1,21 +1,19 @@
 /* =====================================================================
- * config.js — configuracoes estaticas e valores vindos da planilha
+ * config.js — configuracoes estaticas e valores vindos do Cloudflare D1
  * ===================================================================== */
 
 /**
- * URL do Web App do Google Apps Script.
+ * URL da API do Cloudflare Worker.
  *
- * Vazio por padrao: cada dispositivo precisa apontar para o SEU servidor.
- * Se este valor fosse fixo, qualquer pessoa que abrisse o link entraria
- * direto no servidor de quem publicou o app.
- *
- * Preencha aqui somente se voce quiser que o app ja venha configurado
- * (ex.: um app pessoal so para voce). Nesse caso, quem abrir em outro
- * dispositivo ainda podera trocar o servidor pela tela de conexao.
+ * - Se voce publicar o site + API juntos no Cloudflare Workers, o app
+ *   detecta automaticamente "/api" na mesma origem.
+ * - Se voce publicar o site no GitHub Pages e a API no Cloudflare Workers,
+ *   voce pode colar a URL do Worker (ex.: "https://app-financeiro.seu-nome.workers.dev/api")
+ *   aqui em API_URL_PADRAO ou direto na tela inicial do app.
  */
-export const API_URL_PADRAO = '';
+export const API_URL_PADRAO = 'https://app-financeiro.beneditorodrigues-dev.workers.dev/api';
 
-/** Configuracoes vindas da aba "Config" da planilha (sincronizadas pelo store). */
+/** Configuracoes vindas da tabela "Config" do banco D1 (sincronizadas pelo store). */
 export const CONFIG = {
   nome_app: 'Controle Financeiro',
   simbolo_moeda: 'R$',

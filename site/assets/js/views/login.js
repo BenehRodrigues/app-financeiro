@@ -1,7 +1,7 @@
-﻿/* =====================================================================
- * views/login.js — assistente de conexao, criacao da planilha e login
+/* =====================================================================
+ * views/login.js — assistente de conexao, inicializacao do D1 e login
  *
- * Fluxo: conectar a API -> criar planilha (se preciso) -> criar admin -> entrar
+ * Fluxo: conectar a API -> inicializar banco (se preciso) -> criar admin -> entrar
  * ===================================================================== */
 import { esc, icone } from '../utils.js';
 import { getApiUrl, setApiUrl, chamar } from '../api.js';
@@ -26,18 +26,15 @@ let mod = null;
 
 /**
  * Traduz o erro do servidor em uma dica util.
- * O caso mais comum: a URL aponta para um Web App com o backend ANTIGO
- * (que devolvia {"ok":false,"error":"unauthorized"}).
  */
 function dicaDeConexao(msg) {
   const m = String(msg || '').toLowerCase();
   if (m.includes('unauthorized') || m.includes('desconhecido') || m.includes('unknown')) {
-    return 'O servidor respondeu, mas parece ser a versao ANTIGA do backend. ' +
-      'Abra o projeto no Google Apps Script, substitua os arquivos por Utils.gs, Setup.gs e Code.gs ' +
-      '(dentro do repositorio, pasta backend/) e publique uma nova versao.';
+    return 'O servidor respondeu, mas parece estar desatualizado. ' +
+      'Atualize o codigo do seu Cloudflare Worker com backend/worker.js e tente novamente.';
   }
   if (m.includes('failed to fetch') || m.includes('networkerror')) {
-    return 'Nao consegui falar com o servidor. Confira a URL e a sua conexao.';
+    return 'Nao consegui falar com o servidor. Confira a URL do seu Cloudflare Worker e a sua conexao.';
   }
   return msg || 'Nao consegui falar com o servidor.';
 }
@@ -104,7 +101,7 @@ const view = {
           ${this.botaoTema()}
           <div class="login-logo">₣</div>
           <h1>Controle Financeiro</h1>
-          <p class="sub">Entre com o e-mail e a senha cadastrados na planilha.</p>
+          <p class="sub">Entre com o seu e-mail e senha cadastrados.</p>
 
           ${mensagem ? `<div class="toast erro" style="margin-bottom:16px;position:static">
             <span class="ico">${icone('alerta')}</span><span>${esc(mensagem)}</span></div>` : ''}
@@ -126,20 +123,8 @@ const view = {
           </form>
 
           <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
-            <button class="link-btn" data-action="tela-admin">Criar outro acesso</button>
-            <button class="link-btn" data-action="tela-api">Trocar servidor</button>
-            <button class="link-btn" data-action="esquecer-servidor">Esquecer este servidor</button>
+            <button class="link-btn" data-action="tela-admin">Criar admin inicial</button>
           </div>
-
-          <details class="detalhes-tecnicos">
-            <summary>Informacoes do servidor</summary>
-            <div class="corpo">
-              <div class="campo">
-                <label class="campo-rotulo">URL da API (Web App do Apps Script)</label>
-                <input class="input" value="${esc(url)}" readonly style="font-size:11.5px;font-family:var(--mono)">
-              </div>
-            </div>
-          </details>
         </div>
       </div>`;
   },
@@ -151,7 +136,7 @@ const view = {
           ${this.botaoTema()}
           <div class="login-logo">₣</div>
           <h1>Conectar ao servidor</h1>
-          <p class="sub">Cole a URL do Web App do Google Apps Script para conectar o app a planilha.</p>
+          <p class="sub">Cole a URL do seu Cloudflare Worker para conectar o app ao banco de dados D1.</p>
 
           ${mensagem ? `<div class="toast erro" style="margin-bottom:16px;position:static">
             <span class="ico">${icone('alerta')}</span><span>${esc(mensagem)}</span></div>` : ''}
@@ -160,24 +145,22 @@ const view = {
 
           <form id="form-api" style="display:grid;gap:14px">
             <div class="campo">
-              <label class="campo-rotulo" for="api">URL do Web App</label>
+              <label class="campo-rotulo" for="api">URL da API (Cloudflare Worker)</label>
               <input class="input" id="api" name="api" type="url" required
-                     placeholder="https://script.google.com/macros/s/XXXX/exec"
+                     placeholder="https://app-financeiro.seu-subdominio.workers.dev/api"
                      value=""
                      autocomplete="off" spellcheck="false"
                      style="font-size:12px;font-family:var(--mono)">
               <span class="erro-campo" id="erro-api"></span>
               <span class="num-pequeno">
-                Campo sempre vazio: cada dispositivo aponta para o seu proprio servidor.
-                O que voce digitar fica salvo apenas neste navegador.
+                O que voce digitar fica salvo apenas neste navegador. Voce tambem pode fixar a URL em <code>site/assets/js/config.js</code>.
               </span>
             </div>
             <button class="btn btn-primario btn-bloco" type="submit">Testar e salvar</button>
           </form>
 
           <p style="margin-top:16px;font-size:12.5px;color:var(--text-mute);line-height:1.5">
-            Onde encontrar essa URL? No Google Apps Script: <b>Publicar &gt; Implantar como aplicativo da web</b>.
-            Ao final da implantacao aparece o endereco no formato <code>/macros/s/ID/exec</code>.
+            Onde encontrar essa URL? No painel da Cloudflare em <b>Workers &amp; Pages</b> apos implantar o Worker com o banco D1 vinculado.
             Veja <b>docs/DEPLOY.md</b>.
           </p>
         </div>
@@ -190,11 +173,10 @@ const view = {
         <div class="login-card">
           ${this.botaoTema()}
           <div class="login-logo">₣</div>
-          <h1>Criar a planilha</h1>
+          <h1>Inicializar banco de dados</h1>
           <p class="sub">
-            O servidor ainda nao tem uma planilha vinculada. Vamos criar agora —
-            ela sera o banco de dados do app (abas, categorias e contas ja sao
-            montadas automaticamente).
+            Vamos preparar as tabelas no Cloudflare D1 — categorias, contas e
+            caixinhas padrao sao criadas automaticamente.
           </p>
 
           ${mensagem ? `<div class="toast info" style="margin-bottom:16px;position:static">
@@ -202,22 +184,16 @@ const view = {
 
           <form id="form-planilha" style="display:grid;gap:14px">
             <div class="campo">
-              <label class="campo-rotulo" for="p-nome">Nome da planilha</label>
+              <label class="campo-rotulo" for="p-nome">Nome da organizacao / controle</label>
               <input class="input" id="p-nome" name="nome" value="Controle Financeiro" maxlength="80" required>
             </div>
             <button class="btn btn-primario btn-bloco" type="submit" ${criando ? 'disabled' : ''}>
-              ${criando ? 'Criando…' : 'Criar planilha'}
+              ${criando ? 'Inicializando…' : 'Inicializar banco D1'}
             </button>
           </form>
 
-          ${planilhaUrl ? `
-            <div style="margin-top:14px;font-size:12.5px;color:var(--text-dim)">
-              Planilha criada: <a href="${esc(planilhaUrl)}" target="_blank" rel="noopener">abrir no Google Sheets</a>
-            </div>` : ''}
-
           <p style="margin-top:16px;font-size:12.5px;color:var(--text-mute);line-height:1.5">
-            A planilha e criada pela conta que publica o Web App. Voce pode
-            compartilhar depois com quem quiser.
+            Certifique-se de que o banco D1 esta vinculado ao Worker com o nome de variavel <code>DB</code>.
           </p>
         </div>
       </div>`;
@@ -230,7 +206,7 @@ const view = {
           ${this.botaoTema()}
           <div class="login-logo">₣</div>
           <h1>Criar acesso administrador</h1>
-          <p class="sub">A planilha ainda nao tem nenhum usuario. Crie o primeiro acesso.</p>
+          <p class="sub">O banco de dados ainda nao tem nenhum usuario. Crie o primeiro acesso (administrador).</p>
 
           ${mensagem ? `<div class="toast erro" style="margin-bottom:16px;position:static">
             <span class="ico">${icone('alerta')}</span><span>${esc(mensagem)}</span></div>` : ''}
@@ -276,7 +252,7 @@ const view = {
         }
         rerender();
       } catch (e) {
-        modo = 'api';
+        modo = getApiUrl() ? 'login' : 'api';
         mensagem = dicaDeConexao(e.message);
         rerender();
       }
@@ -335,7 +311,7 @@ const view = {
       localStorage.removeItem(CHAVES.USUARIO);
       statusChecado = false;
       modo = 'api';
-      mensagem = 'Servidor esquecido. Cole a URL do Web App que voce quer usar.';
+      mensagem = 'Servidor esquecido. Cole a URL do seu Cloudflare Worker.';
       rerender();
       toast('Servidor removido deste navegador.', 'sucesso');
     },
@@ -346,7 +322,6 @@ const view = {
       if (erroEl) erroEl.textContent = '';
       if (!url) return;
 
-      // aceita qualquer URL valida de http/https (Apps Script, proxy proprio, dominio custom)
       let valida = false;
       try {
         const u = new URL(url);
@@ -354,12 +329,8 @@ const view = {
       } catch (e) { valida = false; }
 
       if (!valida) {
-        if (erroEl) erroEl.textContent = 'Informe uma URL completa, começando com https://';
+        if (erroEl) erroEl.textContent = 'Informe uma URL completa, comecando com https://';
         return;
-      }
-      if (!/script\.google/.test(url) && !erroEl) {
-        // nao bloqueia, mas avisa
-        erroEl.textContent = 'Esta URL nao parece a de um Web App do Apps Script. Se o teste falhar, confira em Publicar > Implantar como aplicativo da web.';
       }
 
       const anterior = getApiUrl();
@@ -385,8 +356,8 @@ const view = {
         planilhaUrl = r.url || '';
         statusChecado = false;
         mensagem = r.criado
-          ? 'Planilha "' + r.planilha + '" criada e configurada.'
-          : 'A planilha "' + r.planilha + '" ja existia e ja esta configurada.';
+          ? 'Banco "' + r.planilha + '" inicializado e configurado.'
+          : 'O banco "' + r.planilha + '" ja estava configurado.';
         modo = r.temAdmin ? 'login' : 'admin';
         if (modo === 'admin') mensagem = mensagem + ' Agora crie o acesso administrador.';
         toast(mensagem, 'sucesso');

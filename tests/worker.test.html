@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Teste do Cloudflare Worker + D1</title></head>
+<body>
+<pre id="out">executando testes do Cloudflare Worker + D1…</pre>
+<script type="module">
+/* =====================================================================
+ * Suite de testes do Cloudflare Worker (backend/worker.js) com mock D1
+ * Abra este arquivo via servidor HTTP local para validar todas as rotas,
+ * autenticacao SHA-256, permissoes, CRUD, parcelamento e caixinhas.
+ * ===================================================================== */
+import worker, {
+  SCHEMA, hashSenha, validarSenha, competenciaDe, addMesesData,
+  toCell, fromCell, garantirBanco
+} from '../backend/worker.js';
+
+const OUT = [];
+function log(...a) { OUT.push(a.map((x) => typeof x === 'string' ? x : JSON.stringify(x)).join(' ')); }
+let okCount = 0, failCount = 0;
+function check(nome, cond, extra) {
+  if (cond) { okCount++; log('  OK   ' + nome); }
+  else { failCount++; log('  FALHA ' + nome + (extra !== undefined ? ' :: ' + JSON.stringify(extra) : '')); }
+}
+function eq(nome, got, expected) {
+  const g = JSON.stringify(got), e = JSON.stringify(expected);
+  check(nome + ' (obtido ' + g + ')', g === e, { got, expected });
+}
+
+/* Mock leve em memoria da API do Cloudflare D1 (prepare / bind / first / all / run / batch) */
+class FakeD1 {
+  constructor() {
+    this.tables = {};
+  }
+  prepare(sql) {
+    const db = this;
+    let params = [];
+    return {
+      bind(...args) { params = args; return this; },
+      async first() {
+        const r = await this.all();
+        return (r.results && r.results[0]) || null;
+      },
+      async run() {
+        await this._exec();
+        return { success: true };
+      },
+      async all() {
+        const res = await this._exec();
+        return { results: res || [] };
+      },
+      async _exec() {
+        const s = sql.replace(/\s+/g, ' ').trim();
+
+        if (/^CREATE TABLE IF NOT EXISTS (\w+)/i.test(s)) {
+          const [, tbl] = s.match(/^CREATE TABLE IF NOT EXISTS (\w+)/i);
+          if (!db.tables[tbl]) db.tables[tbl] = [];
+          return [];
+        }
+        if (/^CREATE INDEX/i.test(s)) return [];
+
+        if (/sqlite_master/i.test(s)) {
+          const m = s.match(/name='(\w+)'/i);
+          const tbl = m ? m[1] : '';
+          return [{ n: db.tables[tbl] ? 1 : 0 }];
+        }
+
+        if (/^SELECT COUNT\(\*\) AS n FROM (\w+)/i.test(s)) {
+          const [, tbl] = s.match(/^SELECT COUNT\(\*\) AS n FROM (\w+)/i);
+          const rows = db.tables[tbl] || [];
+          const w = s.match(/WHERE (\w+)\s*=\s*\?/i);
+          if (w) {
+            const col = w[1];
+            const val = String(params[0] ?? '');
+            return [{ n: rows.filter((r) => String(r[col] ?? '') === val).length }];
+          }
+          return [{ n: rows.length }];
+        }
+
+        if (/^SELECT \* FROM (\w+)/i.test(s) || /^SELECT ID FROM (\w+)/i.test(s)) {
+          const [, tbl] = s.match(/^SELECT (?:\*|ID) FROM (\w+)/i);
+          const rows = db.tables[tbl] || [];
+          const wLower = s.match(/WHERE LOWER\((\w+)\)\s*=\s*\?/i);
+          if (wLower) {
+            const col = wLower[1];
+            const val = String(params[0] ?? '').toLowerCase();
+            return rows.filter((r) => String(r[col] ?? '').toLowerCase() === val);
+          }
+          const w = s.match(/WHERE (\w+)\s*=\s*\?/i);
+          if (w) {
+            const col = w[1];
+            const val = String(params[0] ?? '');
+            return rows.filter((r) => String(r[col] ?? '') === val);
+          }
+          return [...rows];
+        }
+
+        if (/^INSERT(?:\s+OR\s+IGNORE)? INTO (\w+)/i.test(s)) {
+          const isIgnore = /^INSERT\s+OR\s+IGNORE/i.test(s);
+          const isUpsert = /ON CONFLICT/i.test(s);
+          const m = s.match(/INTO (\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i);
+          const tbl = m[1];
+          const cols = m[2].split(',').map((c) => c.trim());
+          const rawVals = m[3].split(',').map((v) => v.trim());
+          if (!db.tables[tbl]) db.tables[tbl] = [];
+
+          const obj = {};
+          let pIdx = 0;
+          for (let i = 0; i < cols.length; i++) {
+            obj[cols[i]] = rawVals[i] === '?' ? params[pIdx++] : rawVals[i].replace(/^'|'$/g, '');
+          }
+
+          const keyCol = tbl === 'Config' && /ON CONFLICT\(Chave\)/i.test(s) ? 'Chave' : 'ID';
+          const idx = db.tables[tbl].findIndex((r) => String(r[keyCol]) === String(obj[keyCol]));
+          if (idx >= 0) {
+            if (isIgnore) return [];
+            if (isUpsert) {
+              db.tables[tbl][idx] = { ...db.tables[tbl][idx], ...obj };
+              return [];
+            }
+          }
+          db.tables[tbl].push(obj);
+          return [];
+        }
+
+        if (/^UPDATE (\w+) SET (.+) WHERE (\w+)\s*=\s*\?/i.test(s)) {
+          const [, tbl, sets, wCol] = s.match(/^UPDATE (\w+) SET (.+) WHERE (\w+)\s*=\s*\?/i);
+          const setCols = sets.split(',').map((x) => x.split('=')[0].trim());
+          const wVal = String(params[setCols.length] ?? '');
+          const rows = db.tables[tbl] || [];
+          for (const r of rows) {
+            if (String(r[wCol]) === wVal) {
+              setCols.forEach((c, i) => { r[c] = params[i]; });
+            }
+          }
+          return [];
+        }
+
+        if (/^DELETE FROM (\w+)/i.test(s)) {
+          const [, tbl] = s.match(/^DELETE FROM (\w+)/i);
+          const w = s.match(/WHERE (\w+)\s*=\s*\?/i);
+          if (!w) {
+            db.tables[tbl] = [];
+            return [];
+          }
+          const col = w[1];
+          const val = String(params[0] ?? '');
+          db.tables[tbl] = (db.tables[tbl] || []).filter((r) => String(r[col] ?? '') !== val);
+          return [];
+        }
+
+        return [];
+      }
+    };
+  }
+  async batch(stmts) {
+    const out = [];
+    for (const st of stmts) {
+      out.push(await st.all());
+    }
+    return out;
+  }
+}
+
+(async function run() {
+  try {
+    const db = new FakeD1();
+    const env = { DB: db };
+
+    async function call(acao, payload = {}) {
+      const req = new Request('https://app-financeiro.workers.dev/api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ acao, ...payload })
+      });
+      const resp = await worker.fetch(req, env);
+      return await resp.json();
+    }
+
+    log('== SCHEMA & INICIALIZACAO AUTOMATICA D1 ==');
+    check('9 tabelas definidas no SCHEMA', Object.keys(SCHEMA).length === 9);
+    const st0 = await call('status');
+    check('status inicializa banco automaticamente', st0.ok === true && st0.semPlanilha === false, st0);
+    check('ainda sem usuarios', st0.temUsuarios === false && st0.usuarios === 0);
+    check('categorias semeadas', db.tables.Categorias.length === 34);
+    check('contas semeadas', db.tables.Contas.length === 4);
+    check('caixinhas semeadas', db.tables.Caixinhas.length === 3);
+    check('config semeada', db.tables.Config.length === 10);
+
+    log('');
+    log('== SENHA E FORMATACAO ==');
+    const h = await hashSenha('segredo', 'abc123');
+    check('hash SHA-256 64 chars hex', /^[0-9a-f]{64}$/.test(h), h);
+    eq('hash deterministico', await hashSenha('segredo', 'abc123'), h);
+    eq('competenciaDe', competenciaDe('2026-10-15'), '2026-10');
+    eq('addMesesData 31/01 + 1', competenciaDe(addMesesData('2026-01-31', 1)), '2026-02');
+    eq('toCell moeda com virgula', toCell('1234,56', 'moeda'), 1234.56);
+
+    log('');
+    log('== CADASTRO ADMIN INICIAL E LOGIN ==');
+    const rAdmin = await call('criaradmininicial', { nome: 'Ana', email: 'ana@teste.com', senha: 'segredo1' });
+    check('admin inicial criado', rAdmin.ok === true, rAdmin);
+    const rAdmin2 = await call('criaradmininicial', { nome: 'Outro', email: 'b@teste.com', senha: 'segredo1' });
+    check('segundo admin inicial bloqueado', rAdmin2.ok === false && rAdmin2.codigo === 'JA_EXISTE', rAdmin2);
+
+    const loginOk = await call('login', { email: 'ANA@TESTE.COM', senha: 'segredo1' });
+    check('login ok (case-insensitive)', loginOk.ok === true && !!loginOk.token, loginOk);
+    const token = loginOk.token;
+
+    check('senha errada bloqueada', (await call('login', { email: 'ana@teste.com', senha: 'errada' })).ok === false);
+    const boot = await call('bootstrap', { token });
+    check('bootstrap ok', boot.ok === true && boot.categorias.length === 34, boot);
+
+    log('');
+    log('== LANCAMENTOS & PARCELAMENTO ==');
+    const catId = boot.categorias[0].ID;
+    const contaId = boot.contas[0].ID;
+    const parc = await call('salvarlancamento', {
+      token,
+      dados: {
+        Data: '2026-10-10', Tipo: 'Despesa', Valor: '3000', Descricao: 'Notebook',
+        CategoriaID: catId, ContaID: contaId, Parcelas: 3, Status: 'Pago'
+      }
+    });
+    check('cria 3 parcelas', parc.ok === true && parc.ids.length === 3, parc);
+    const delGrupo = await call('excluirlancamento', { token, id: parc.ids[0], excluirGrupo: true });
+    check('exclui grupo inteiro', delGrupo.ok === true && delGrupo.removidas === 3, delGrupo);
+
+    log('');
+    log('== PERMISSOES & TROCA DE SENHA ==');
+    await call('salvarusuario', { token, dados: { Nome: 'Leitor', Email: 'leitor@teste.com', Perfil: 'leitor', Senha: 'senha123' } });
+    const tLeitor = (await call('login', { email: 'leitor@teste.com', senha: 'senha123' })).token;
+    check('leitor nao salva lancamento', (await call('salvarlancamento', {
+      token: tLeitor, dados: { Data: '2026-10-15', Tipo: 'Despesa', Valor: 50, Descricao: 'X' }
+    })).ok === false);
+    check('troca de senha revoga sessao', (await call('trocarsenha', {
+      token: tLeitor, senhaAtual: 'senha123', senhaNova: 'nova123'
+    })).ok === true);
+    check('sessao antiga revogada', (await call('bootstrap', { token: tLeitor })).ok === false);
+  } catch (e) {
+    log('EXCEPTION: ' + (e?.stack || e));
+    failCount++;
+  }
+
+  log('');
+  log(`===== ${okCount} OK / ${failCount} FALHAS =====`);
+  document.getElementById('out').textContent = OUT.join('\n');
+})();
+</script>
+</body></html>
