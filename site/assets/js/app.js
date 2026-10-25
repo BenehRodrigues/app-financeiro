@@ -23,13 +23,13 @@ const VIEWS = {
 
 const NAV = [
   { chave: 'dashboard', rotulo: 'Painel', icone: 'painel' },
-  { chave: 'lancamentos', rotulo: 'Lancamentos', icone: 'lancamentos' },
+  { chave: 'lancamentos', rotulo: 'Lançamentos', icone: 'lancamentos' },
   { chave: 'caixinhas', rotulo: 'Caixinhas', icone: 'caixinhas' },
-  { chave: 'relatorios', rotulo: 'Relatorios', icone: 'relatorios' },
+  { chave: 'relatorios', rotulo: 'Relatórios', icone: 'relatorios' },
   { chave: 'categorias', rotulo: 'Categorias', icone: 'categorias' },
   { chave: 'contas', rotulo: 'Contas', icone: 'contas' },
   { chave: 'acessos', rotulo: 'Acessos', icone: 'acessos', admin: true },
-  { chave: 'config', rotulo: 'Configuracoes', icone: 'config', admin: true }
+  { chave: 'config', rotulo: 'Configurações', icone: 'config', admin: true }
 ];
 
 const NAV_MOBILE = ['dashboard', 'lancamentos', 'caixinhas', 'relatorios'];
@@ -104,9 +104,9 @@ function montarShell() {
         </div>
         <div class="topo-acoes">
           <div class="topo-mes">
-            <button data-action="mes-anterior" aria-label="Mes anterior">${icone('esquerda')}</button>
+            <button data-action="mes-anterior" aria-label="Mês anterior">${icone('esquerda')}</button>
             <span class="mes-label" id="topo-mes">${esc(mesBR(mesSelecionado))}</span>
-            <button data-action="mes-proximo" aria-label="Proximo mes">${icone('direita')}</button>
+            <button data-action="mes-proximo" aria-label="Próximo mês">${icone('direita')}</button>
           </div>
           <button class="btn-icone" data-action="atualizar" aria-label="Atualizar">${icone('atualizar')}</button>
           <button class="btn-icone" data-action="alternar-tema" aria-label="Alternar tema" id="btn-tema">${icone('lua')}</button>
@@ -116,7 +116,7 @@ function montarShell() {
 
       <div class="corpo">
         <aside class="lateral" id="lateral">
-          <div class="lateral-titulo">Navegacao</div>
+          <div class="lateral-titulo">Navegação</div>
           ${NAV.map((n) => navItem(n, false)).join('')}
         </aside>
         <main class="conteudo" id="conteudo"></main>
@@ -237,7 +237,7 @@ const ACOES_GLOBAIS = {
   async sair() {
     const ok = await confirmar({
       titulo: 'Sair do app',
-      mensagem: 'Deseja encerrar a sessao?',
+      mensagem: 'Deseja encerrar a sessão?',
       textoOk: 'Sair'
     });
     if (!ok) return;
@@ -249,7 +249,7 @@ const ACOES_GLOBAIS = {
   async desconectar() {
     const ok = await confirmar({
       titulo: 'Sair da conta',
-      mensagem: 'Deseja encerrar a sua sessao neste navegador?',
+      mensagem: 'Deseja encerrar a sua sessão neste navegador?',
       textoOk: 'Sair',
       perigo: true
     });
@@ -360,7 +360,7 @@ function abrirTrocaSenha() {
           <input class="input" id="s-atual" name="senhaAtual" type="password" required autocomplete="current-password">
         </div>
         <div class="campo">
-          <label class="campo-rotulo" for="s-nova">Nova senha (minimo 6 caracteres)</label>
+          <label class="campo-rotulo" for="s-nova">Nova senha (mínimo 6 caracteres)</label>
           <input class="input" id="s-nova" name="senhaNova" type="password" required minlength="6" autocomplete="new-password">
         </div>
         <div class="campo">
@@ -387,13 +387,13 @@ function abrirTrocaSenha() {
     const conf = String(fd.get('confirmar') || '');
 
     if (nova.length < 6) { erro.textContent = 'A nova senha precisa de 6 caracteres ou mais.'; return; }
-    if (nova !== conf) { erro.textContent = 'As senhas nao conferem.'; return; }
+    if (nova !== conf) { erro.textContent = 'As senhas não conferem.'; return; }
 
     await comBotao(btn, async () => {
       try {
         await chamar('trocarsenha', { senhaAtual: atual, senhaNova: nova });
         fecharModal();
-        toast('Senha alterada. Faca login novamente.', 'sucesso');
+        toast('Senha alterada. Faça login novamente.', 'sucesso');
         setTimeout(() => window.location.reload(), 1200);
       } catch (e) {
         erro.textContent = e.message;

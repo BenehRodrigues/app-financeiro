@@ -13,7 +13,7 @@ const CORES = ['#22c55e', '#0ea5e9', '#a855f7', '#f59e0b', '#ef4444', '#14b8a6',
 let ano = String(new Date().getFullYear());
 
 export default {
-  titulo: 'Relatorios',
+  titulo: 'Relatórios',
 
   render(ctx) {
     const l = store.estado.lancamentos;
@@ -41,8 +41,8 @@ export default {
       <div class="pagina">
         <div class="pagina-cabecalho">
           <div class="titulos">
-            <h1>Relatorios</h1>
-            <p>Consolidado de ${esc(ano)} · ${doAno.length} lancamento(s)</p>
+            <h1>Relatórios</h1>
+            <p>Consolidado de ${esc(ano)} · ${doAno.length} lançamento(s)</p>
           </div>
           <div class="pagina-acoes">
             <select class="select" id="r-ano" style="width:auto">
@@ -66,14 +66,14 @@ export default {
             <div class="kpi-valor ${r.saldo >= 0 ? 'valor-receita' : 'valor-despesa'}">${moeda(r.saldo)}</div>
           </div>
           <div class="kpi" style="--kpi-cor:#38bdf8">
-            <div class="kpi-rotulo">Taxa de poupanca</div>
+            <div class="kpi-rotulo">Taxa de poupança</div>
             <div class="kpi-valor">${porcento(taxa)}</div>
-            <div class="kpi-rodape">media de ${moeda(r.receitas / 12)}/mes</div>
+            <div class="kpi-rodape">média de ${moeda(r.receitas / 12)}/mês</div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-cabecalho"><h3>Evolucao mensal</h3><span class="sub">${esc(ano)}</span></div>
+          <div class="card-cabecalho"><h3>Evolução mensal</h3><span class="sub">${esc(ano)}</span></div>
           <div class="card-corpo">
             <div class="grafico">${graficos.barras({
               labels: serie.map((s) => mesBR(s.mes)),
@@ -130,7 +130,7 @@ export default {
           </div>
 
           <div class="card">
-            <div class="card-cabecalho"><h3>Despesas por conta / cartao</h3></div>
+            <div class="card-cabecalho"><h3>Despesas por conta / cartão</h3></div>
             <div class="card-corpo">
               ${contas.length ? `<div class="grafico">${graficos.hbarras({
                 itens: contas.map((c) => ({
@@ -146,12 +146,12 @@ export default {
 
         <div class="grid grid-2">
           <div class="card">
-            <div class="card-cabecalho"><h3>Fechamento mes a mes</h3></div>
+            <div class="card-cabecalho"><h3>Fechamento mês a mês</h3></div>
             <div class="card-corpo sem-pad">
               <div class="tabela-wrap">
                 <table class="tabela">
                   <thead><tr>
-                    <th>Mes</th><th class="num">Receitas</th><th class="num">Despesas</th><th class="num">Saldo</th><th class="num">Acumulado</th>
+                    <th>Mês</th><th class="num">Receitas</th><th class="num">Despesas</th><th class="num">Saldo</th><th class="num">Acumulado</th>
                   </tr></thead>
                   <tbody>
                     ${(() => {
@@ -176,13 +176,13 @@ export default {
           <div class="card">
             <div class="card-cabecalho">
               <h3>Maiores despesas do ano</h3>
-              <span class="sub">${maiores.length} lancamento(s) · apenas despesas</span>
+              <span class="sub">${maiores.length} lançamento(s) · apenas despesas</span>
             </div>
             <div class="card-corpo sem-pad">
               ${maiores.length ? `
               <div class="tabela-wrap">
                 <table class="tabela">
-                  <thead><tr><th>Descricao</th><th>Data</th><th>Categoria</th><th class="num">Valor</th></tr></thead>
+                  <thead><tr><th>Descrição</th><th>Data</th><th>Categoria</th><th class="num">Valor</th></tr></thead>
                   <tbody>
                     ${maiores.map((m) => `<tr>
                       <td class="desc">${esc(m.Descricao)}</td>
@@ -224,7 +224,7 @@ export default {
       a.download = `relatorio-${ano}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
-      toast('Relatorio exportado.', 'sucesso');
+      toast('Relatório exportado.', 'sucesso');
     }
   }
 };

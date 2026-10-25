@@ -35,19 +35,20 @@ export function valorTotal(l) {
  * ------------------------------------------------------------------- */
 export function filtrar(lancamentos, f = {}) {
   const busca = String(f.busca || '').trim().toLowerCase();
+  const semAcento = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   return (lancamentos || []).filter((l) => {
     if (f.mes && competencia(l) !== f.mes) return false;
     if (f.tipo && String(l.Tipo) !== f.tipo) return false;
     if (f.categoriaId && l.CategoriaID !== f.categoriaId) return false;
     if (f.contaId && l.ContaID !== f.contaId) return false;
     if (f.status && l.Status !== f.status) return false;
-    if (f.forma && l.FormaPagamento !== f.forma) return false;
+    if (f.forma && semAcento(l.FormaPagamento) !== semAcento(f.forma)) return false;
     if (f.caixinhaId && l.CaixinhaID !== f.caixinhaId) return false;
     if (f.somenteFixos && !FIXO(l)) return false;
     if (f.somenteRecorrentes && !RECORRENTE(l)) return false;
     if (busca) {
       const alvo = [l.Descricao, l.Obs, l.Status, l.FormaPagamento].join(' ').toLowerCase();
-      if (!alvo.includes(busca)) return false;
+      if (!alvo.includes(busca) && !semAcento(alvo).includes(semAcento(busca))) return false;
     }
     return true;
   });

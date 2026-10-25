@@ -36,7 +36,7 @@ export default {
         <div class="pagina-cabecalho">
           <div class="titulos">
             <h1>Categorias</h1>
-            <p>Organize os gastos e receitas por grupo. O orcamento e compared com ${esc(mesExtenso(ctx.mes))}.</p>
+            <p>Organize os gastos e receitas por grupo. O orçamento é comparado com ${esc(mesExtenso(ctx.mes))}.</p>
           </div>
           <div class="pagina-acoes">
             ${store.podeEditar ? `<button class="btn btn-primario" data-action="nova">${icone('somar')} Nova categoria</button>` : ''}
@@ -61,13 +61,13 @@ export default {
       if (!c) return;
       const ok = await confirmar({
         titulo: 'Excluir categoria',
-        mensagem: `Excluir a categoria "${c.Nome}"? Se ela estiver em uso, a exclusao sera bloqueada.`,
+        mensagem: `Excluir a categoria "${c.Nome}"? Se ela estiver em uso, a exclusão será bloqueada.`,
         textoOk: 'Excluir', perigo: true
       });
       if (!ok) return;
       try {
         await store.acao('excluircategoria', { id: c.ID });
-        toast('Categoria excluida.', 'sucesso');
+        toast('Categoria excluída.', 'sucesso');
       } catch (e) {
         toast(e.message, 'erro');
       }
@@ -89,7 +89,7 @@ function cartao(c, lancamentosDoMes, mes) {
         <span class="ponto" style="background:${esc(c.Cor || '#64748b')};width:14px;height:14px"></span>
         <div style="flex:1;min-width:0">
           <div class="caixinha-nome">${esc(c.Nome)}</div>
-          <div class="caixinha-desc">${esc(c.Grupo || 'Sem grupo')} · ${total} lancamento(s)</div>
+          <div class="caixinha-desc">${esc(c.Grupo || 'Sem grupo')} · ${total} lançamento(s)</div>
         </div>
         ${c.Ativo === 'NAO' ? '<span class="badge">inativa</span>' : ''}
       </div>
@@ -98,10 +98,10 @@ function cartao(c, lancamentosDoMes, mes) {
         <div class="barra-progresso"><div class="barra" style="width:${Math.min(100, pct).toFixed(1)}%;background:${pct > 100 ? 'var(--despesa)' : (c.Cor || '#22c55e')}"></div></div>
         <div class="caixinha-info">
           <span>Usado <b>${moeda(usados, { compacto: true })}</b></span>
-          <span>Orcamento <b>${moeda(orc, { compacto: true })}</b></span>
+          <span>Orçamento <b>${moeda(orc, { compacto: true })}</b></span>
         </div>` : `
         <div class="caixinha-info">
-          <span>Gasto no mes</span>
+          <span>Gasto no mês</span>
           <span><b>${moeda(usados)}</b></span>
         </div>`}
 
@@ -141,7 +141,7 @@ function abrirFormulario(c) {
           <datalist id="lista-grupos">${grupos.map((g) => `<option value="${g}">`).join('')}</datalist>
         </div>
         <div class="campo">
-          <label class="campo-rotulo" for="c-orc">Orcamento mensal</label>
+          <label class="campo-rotulo" for="c-orc">Orçamento mensal</label>
           <input class="input" id="c-orc" name="OrcamentoMensal" inputmode="decimal" placeholder="0,00"
                  value="${d.OrcamentoMensal ? esc(d.OrcamentoMensal) : ''}">
         </div>
@@ -160,7 +160,7 @@ function abrirFormulario(c) {
         </div>
       </div>
       <div class="campo">
-        <label class="campo-rotulo" for="c-obs">Observacao</label>
+        <label class="campo-rotulo" for="c-obs">Observação</label>
         <input class="input" id="c-obs" name="Obs" maxlength="200" value="${esc(d.Obs || '')}">
       </div>
       <div class="erro-campo" id="erro-form"></div>

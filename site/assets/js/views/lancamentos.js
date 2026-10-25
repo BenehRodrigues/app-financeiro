@@ -33,7 +33,7 @@ function opcoesCategoria(tipo) {
  * Render
  * ------------------------------------------------------------------- */
 export default {
-  titulo: 'Lancamentos',
+  titulo: 'Lançamentos',
 
   render(ctx) {
     const lista = ordenarLista(aplicarFiltros(ctx));
@@ -50,12 +50,12 @@ export default {
       <div class="pagina">
         <div class="pagina-cabecalho">
           <div class="titulos">
-            <h1>Lancamentos</h1>
-            <p>${total} lancamento(s) · ${esc(filtros.mes ? mesExtenso(filtros.mes) : 'todos os meses')}</p>
+            <h1>Lançamentos</h1>
+            <p>${total} lançamento(s) · ${esc(filtros.mes ? mesExtenso(filtros.mes) : 'todos os meses')}</p>
           </div>
           <div class="pagina-acoes">
             <button class="btn btn-pequeno" data-action="exportar">${icone('baixar')} CSV</button>
-            ${store.podeEditar ? `<button class="btn btn-primario" data-action="novo">${icone('somar')} Novo lancamento</button>` : ''}
+            ${store.podeEditar ? `<button class="btn btn-primario" data-action="novo">${icone('somar')} Novo lançamento</button>` : ''}
           </div>
         </div>
 
@@ -63,10 +63,10 @@ export default {
           <div class="filtros">
             <div class="campo">
               <label class="campo-rotulo">Buscar</label>
-              <input class="input" id="f-busca" placeholder="descricao, observacao…" value="${esc(filtros.busca)}">
+              <input class="input" id="f-busca" placeholder="descrição, observação…" value="${esc(filtros.busca)}">
             </div>
             <div class="campo">
-              <label class="campo-rotulo">Mes</label>
+              <label class="campo-rotulo">Mês</label>
               <select class="select" id="f-mes">
                 <option value="">Todos os meses</option>
                 ${mesesDisponiveis().map((m) => `<option value="${m}" ${filtros.mes === m ? 'selected' : ''}>${esc(mesExtenso(m))}</option>`).join('')}
@@ -108,7 +108,7 @@ export default {
                 <option value="data-asc" ${ordem === 'data-asc' ? 'selected' : ''}>Mais antigos</option>
                 <option value="valor-desc" ${ordem === 'valor-desc' ? 'selected' : ''}>Maior valor</option>
                 <option value="valor-asc" ${ordem === 'valor-asc' ? 'selected' : ''}>Menor valor</option>
-                <option value="descricao" ${ordem === 'descricao' ? 'selected' : ''}>Descricao (A-Z)</option>
+                <option value="descricao" ${ordem === 'descricao' ? 'selected' : ''}>Descrição (A-Z)</option>
               </select>
             </div>
           </div>
@@ -119,7 +119,7 @@ export default {
               <button class="chip ${filtros.tipo === 'Despesa' ? 'ativo' : ''}" data-action="filtro-tipo" data-valor="Despesa">Despesas</button>
               <button class="chip ${filtersTipoReceita() ? 'ativo' : ''}" data-action="filtro-tipo" data-valor="Receita">Receitas</button>
               <button class="chip ${filtros.status === 'Pendente' ? 'ativo' : ''}" data-action="filtro-status" data-valor="Pendente">Pendentes</button>
-              <button class="chip ${filtros.forma === 'Credito' ? 'ativo' : ''}" data-action="filtro-forma" data-valor="Credito">No cartao</button>
+              <button class="chip ${filtros.forma === 'Crédito' ? 'ativo' : ''}" data-action="filtro-forma" data-valor="Crédito">No cartão</button>
             </div>
             <div style="font-size:13px;color:var(--text-dim)">
               Receitas <b class="valor-receita">${moeda(r.receitas, { compacto: true })}</b> ·
@@ -136,7 +136,7 @@ export default {
               <thead>
                 <tr>
                   <th style="width:92px">Data</th>
-                  <th>Descricao</th>
+                  <th>Descrição</th>
                   <th style="width:150px">Categoria</th>
                   <th style="width:130px">Conta</th>
                   <th style="width:110px">Forma</th>
@@ -152,13 +152,13 @@ export default {
           </div>
           ${paginas > 1 ? `
           <div class="card-corpo" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-            <span class="num-pequeno">Pagina ${paginaAtual} de ${paginas}</span>
+            <span class="num-pequeno">Página ${paginaAtual} de ${paginas}</span>
             <div class="btn-grupo">
               <button class="btn btn-pequeno" data-action="pagina" data-valor="${paginaAtual - 1}" ${paginaAtual <= 1 ? 'disabled' : ''}>Anterior</button>
-              <button class="btn btn-pequeno" data-action="pagina" data-valor="${paginaAtual + 1}" ${paginaAtual >= paginas ? 'disabled' : ''}>Proxima</button>
+              <button class="btn btn-pequeno" data-action="pagina" data-valor="${paginaAtual + 1}" ${paginaAtual >= paginas ? 'disabled' : ''}>Próxima</button>
             </div>
           </div>` : ''}
-          ` : '<div class="vazio"><div class="icone">📋</div><h3>Nenhum lancamento encontrado</h3><p>Ajuste os filtros ou cadastre o primeiro lancamento.</p></div>'}
+          ` : '<div class="vazio"><div class="icone">📋</div><h3>Nenhum lançamento encontrado</h3><p>Ajuste os filtros ou cadastre o primeiro lançamento.</p></div>'}
         </div>
       </div>`;
   },
@@ -198,7 +198,7 @@ export default {
     duplicar(el) {
       const l = store.estado.lancamentos.find((x) => x.ID === el.dataset.id);
       if (!l) return;
-      abrirFormulario({ ...l, ID: '', Data: hojeISO(), Descricao: `${l.Descricao} (copia)` });
+      abrirFormulario({ ...l, ID: '', Data: hojeISO(), Descricao: `${l.Descricao} (cópia)` });
     },
 
     async excluir(el) {
@@ -206,7 +206,7 @@ export default {
       if (!l) return;
       const temGrupo = !!l.GrupoParcelas;
       const ok = await confirmar({
-        titulo: 'Excluir lancamento',
+        titulo: 'Excluir lançamento',
         mensagem: temGrupo
           ? `"${l.Descricao}" faz parte de um parcelamento (${l.ParcelaAtual}/${l.Parcelas}). Deseja excluir TODAS as parcelas?`
           : `Deseja excluir "${l.Descricao}" de ${moeda(l.Valor)}?`,
@@ -216,7 +216,7 @@ export default {
       if (!ok) return;
       try {
         await store.acao('excluirlancamento', { id: l.ID, excluirGrupo: temGrupo });
-        toast('Lancamento excluido.', 'sucesso');
+        toast('Lançamento excluído.', 'sucesso');
       } catch (e) {
         toast(e.message, 'erro');
       }
@@ -338,13 +338,13 @@ function linhaLancamento(l) {
 }
 
 /* ---------------------------------------------------------------------
- * Formulario
+ * Formulário
  * ------------------------------------------------------------------- */
 function abrirFormulario(l) {
   const edicao = !!(l && l.ID);
   const d = l || {
     Data: hojeISO(), Tipo: 'Despesa', Valor: '', Descricao: '', CategoriaID: '',
-    ContaID: '', FormaPagamento: 'Debito', Parcelas: 1, ParcelaAtual: 1, Status: 'Pago',
+    ContaID: '', FormaPagamento: 'Débito', Parcelas: 1, ParcelaAtual: 1, Status: 'Pago',
     Recorrente: 'NAO', Fixo: 'NAO', CaixinhaID: '', Obs: ''
   };
 
@@ -379,7 +379,7 @@ function abrirFormulario(l) {
                  placeholder="0,00" value="${d.Valor ? esc(d.Valor) : ''}" required>
         </div>
         <div class="campo">
-          <label class="campo-rotulo" for="l-desc">Descricao <span class="obrig">*</span></label>
+          <label class="campo-rotulo" for="l-desc">Descrição <span class="obrig">*</span></label>
           <input class="input" id="l-desc" name="Descricao" maxlength="120"
                  placeholder="Ex.: Aluguel de outubro" value="${esc(d.Descricao || '')}" required>
         </div>
@@ -400,7 +400,7 @@ function abrirFormulario(l) {
           </select>
         </div>
         <div class="campo">
-          <label class="campo-rotulo" for="l-conta">Conta / cartao</label>
+          <label class="campo-rotulo" for="l-conta">Conta / cartão</label>
           <select class="select" id="l-conta" name="ContaID">
             <option value="">Sem conta</option>
             ${contas.map((c) => `<option value="${c.ID}" ${d.ContaID === c.ID ? 'selected' : ''}>${esc(c.Nome)}</option>`).join('')}
@@ -424,17 +424,17 @@ function abrirFormulario(l) {
       </div>
 
       <div class="form-secao">
-        <div class="form-secao-titulo">Parcelamento e recorrencia</div>
+        <div class="form-secao-titulo">Parcelamento e recorrência</div>
         <div class="form-grid">
           <div class="campo">
-            <label class="campo-rotulo" for="l-parcelas">Numero de parcelas</label>
+            <label class="campo-rotulo" for="l-parcelas">Número de parcelas</label>
             <input class="input" id="l-parcelas" name="Parcelas" type="number" min="1" max="60"
                    value="${esc(d.Parcelas || 1)}" ${edicao ? 'disabled' : ''}>
-            ${edicao ? '<span class="num-pequeno">Nao editavel apos o parcelamento</span>' : ''}
+            ${edicao ? '<span class="num-pequeno">Não editável após o parcelamento</span>' : ''}
           </div>
           <div class="campo" style="justify-content:flex-end;gap:10px">
             <label class="checkbox"><input type="checkbox" name="Fixo" ${d.Fixo === 'SIM' ? 'checked' : ''}> Gasto fixo mensal</label>
-            <label class="checkbox"><input type="checkbox" name="Recorrente" ${d.Recorrente === 'SIM' ? 'checked' : ''}> Recorrente (repetir todo mes)</label>
+            <label class="checkbox"><input type="checkbox" name="Recorrente" ${d.Recorrente === 'SIM' ? 'checked' : ''}> Recorrente (repetir todo mês)</label>
           </div>
         </div>
       </div>
@@ -450,7 +450,7 @@ function abrirFormulario(l) {
             </select>
           </div>
           <div class="campo">
-            <label class="campo-rotulo" for="l-obs">Observacao</label>
+            <label class="campo-rotulo" for="l-obs">Observação</label>
             <input class="input" id="l-obs" name="Obs" maxlength="250" value="${esc(d.Obs || '')}">
           </div>
         </div>
@@ -460,11 +460,11 @@ function abrirFormulario(l) {
     </form>`;
 
   const dlg = abrirModal({
-    titulo: edicao ? 'Editar lancamento' : 'Novo lancamento',
+    titulo: edicao ? 'Editar lançamento' : 'Novo lançamento',
     corpo,
     rodape: `
       <button type="button" class="btn" data-fechar>Cancelar</button>
-      <button type="button" class="btn btn-primario" data-salvar>${edicao ? 'Salvar alteracoes' : 'Adicionar'}</button>`
+      <button type="button" class="btn btn-primario" data-salvar>${edicao ? 'Salvar alterações' : 'Adicionar'}</button>`
   });
 
   const form = dlg.querySelector('#form-lanc');
@@ -503,14 +503,14 @@ function abrirFormulario(l) {
 
     if (!dados.Data) { erro.textContent = 'Informe a data.'; return; }
     if (!(dados.Valor > 0)) { erro.textContent = 'O valor deve ser maior que zero.'; return; }
-    if (!dados.Descricao) { erro.textContent = 'Informe a descricao.'; return; }
+    if (!dados.Descricao) { erro.textContent = 'Informe a descrição.'; return; }
     erro.textContent = '';
 
     await comBotao(btn, async () => {
       try {
         const r = await store.acao('salvarlancamento', { dados });
         fecharModal();
-        toast(r.ids && r.ids.length > 1 ? `${r.ids.length} parcelas cadastradas!` : 'Lancamento salvo!', 'sucesso');
+        toast(r.ids && r.ids.length > 1 ? `${r.ids.length} parcelas cadastradas!` : 'Lançamento salvo!', 'sucesso');
       } catch (e) {
         erro.textContent = e.message;
         toast(e.message, 'erro');

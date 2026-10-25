@@ -8,25 +8,25 @@ import { getApiUrl } from '../api.js';
 
 const CAMPOS = [
   { chave: 'nome_app', rotulo: 'Nome do aplicativo', tipo: 'texto' },
-  { chave: 'simbolo_moeda', rotulo: 'Simbolo da moeda', tipo: 'texto', dica: 'Ex.: R$, $, EUR' },
+  { chave: 'simbolo_moeda', rotulo: 'Símbolo da moeda', tipo: 'texto', dica: 'Ex.: R$, $, EUR' },
   { chave: 'locale', rotulo: 'Formato regional', tipo: 'texto', dica: 'Ex.: pt-BR, en-US' },
   { chave: 'mostrar_centavos', rotulo: 'Mostrar centavos', tipo: 'bool' },
-  { chave: 'atualizacao_auto_seg', rotulo: 'Atualizacao automatica (segundos)', tipo: 'texto', dica: '0 desliga a atualizacao automatica' },
+  { chave: 'atualizacao_auto_seg', rotulo: 'Atualização automática (segundos)', tipo: 'texto', dica: '0 desliga a atualização automática' },
   { chave: 'permitir_parcelas', rotulo: 'Permitir parcelamento', tipo: 'bool' },
-  { chave: 'tema_padrao', rotulo: 'Tema padrao', tipo: 'texto', dica: 'escuro ou claro' },
-  { chave: 'cor_primaria', rotulo: 'Cor primaria', tipo: 'texto', dica: 'Ex.: #22c55e' },
+  { chave: 'tema_padrao', rotulo: 'Tema padrão', tipo: 'texto', dica: 'escuro ou claro' },
+  { chave: 'cor_primaria', rotulo: 'Cor primária', tipo: 'texto', dica: 'Ex.: #22c55e' },
   { chave: 'alerta_saldo_negativo', rotulo: 'Destacar saldo negativo', tipo: 'bool' },
-  { chave: 'mostrar_projecao', rotulo: 'Exibir projecao no painel', tipo: 'bool' }
+  { chave: 'mostrar_projecao', rotulo: 'Exibir projeção no painel', tipo: 'bool' }
 ];
 
 export default {
-  titulo: 'Configuracoes',
+  titulo: 'Configurações',
 
   render(ctx) {
     if (!store.ehAdmin) {
       return `<div class="pagina"><div class="card"><div class="vazio">
-        <div class="icone">⚙️</div><h3>Area restrita</h3>
-        <p>Somente administradores podem alterar as configuracoes.</p>
+        <div class="icone">⚙️</div><h3>Área restrita</h3>
+        <p>Somente administradores podem alterar as configurações.</p>
       </div></div></div>`;
     }
 
@@ -37,8 +37,8 @@ export default {
       <div class="pagina">
         <div class="pagina-cabecalho">
           <div class="titulos">
-            <h1>Configuracoes</h1>
-            <p>Valores salvos na tabela <b>Config</b> do banco Cloudflare D1 e aplicados a todos os usuarios.</p>
+            <h1>Configurações</h1>
+            <p>Valores salvos na tabela <b>Config</b> do banco Cloudflare D1 e aplicados a todos os usuários.</p>
           </div>
           <div class="pagina-acoes">
             <button class="btn btn-primario" data-action="salvar">${icone('ok')} Salvar</button>
@@ -64,7 +64,7 @@ export default {
         </div>
 
         <div class="card card-pad">
-          <h3 style="font-size:14.5px;margin-bottom:10px">Conexao</h3>
+          <h3 style="font-size:14.5px;margin-bottom:10px">Conexão</h3>
           <div class="campo">
             <label class="campo-rotulo">URL da API (Cloudflare Worker)</label>
             <input class="input" value="${esc(url)}" readonly style="font-family:var(--mono);font-size:12px">
@@ -75,7 +75,7 @@ export default {
         <div class="card card-pad" style="border-color:color-mix(in srgb, var(--danger) 40%, transparent)">
           <h3 style="font-size:14.5px;margin-bottom:6px;color:var(--danger)">Zona de risco</h3>
           <p class="num-pequeno" style="margin-bottom:12px">
-            Apaga todos os lancamentos, movimentacoes de caixinha e caixinhas. Usuarios e configuracoes permanecem.
+            Apaga todos os lançamentos, movimentações de caixinha e caixinhas. Usuários e configurações permanecem.
           </p>
           <button class="btn btn-perigo" data-action="limpar">${icone('excluir')} Apagar todos os dados financeiros</button>
         </div>
@@ -98,7 +98,7 @@ export default {
           for (const chave of Object.keys(novos)) {
             await store.acao('salvarconfig', { chave, valor: novos[chave] });
           }
-          toast('Configuracoes salvas!', 'sucesso');
+          toast('Configurações salvas!', 'sucesso');
           window.dispatchEvent(new CustomEvent('app:repintar'));
         } catch (e) {
           toast(e.message, 'erro');
@@ -109,20 +109,20 @@ export default {
     async limpar() {
       const ok = await confirmar({
         titulo: 'Apagar todos os dados',
-        mensagem: 'Todos os lancamentos, caixinhas e movimentacoes serao apagados da planilha. Esta acao nao pode ser desfeita. Continuar?',
+        mensagem: 'Todos os lançamentos, caixinhas e movimentações serão apagados do banco de dados. Esta ação não pode ser desfeita. Continuar?',
         textoOk: 'Sim, apagar tudo',
         perigo: true
       });
       if (!ok) return;
       const ok2 = await confirmar({
-        titulo: 'Confirmacao final',
+        titulo: 'Confirmação final',
         mensagem: 'Clique em OK e digite APAGAR TUDO no campo abaixo para confirmar.',
         textoOk: 'Continuar',
         perigo: true
       });
       if (!ok2) return;
       const texto = window.prompt('Digite APAGAR TUDO para confirmar:');
-      if (texto !== 'APAGAR TUDO') return toast('Confirmacao invalida. Nada foi apagado.', 'info');
+      if (texto !== 'APAGAR TUDO') return toast('Confirmação inválida. Nada foi apagado.', 'info');
       try {
         const r = await store.acao('limpar', { confirmar: 'APAGAR TUDO' });
         toast(`${r.removidas} linha(s) apagada(s).`, 'sucesso');

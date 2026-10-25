@@ -50,9 +50,9 @@ export const TABELAS = {
   CONFIG: 'Config'
 };
 
-export const FORMAS_PAGAMENTO = ['Debito', 'Credito', 'Pix', 'Dinheiro', 'Boleto', 'Transferencia', 'Outro'];
+export const FORMAS_PAGAMENTO = ['Débito', 'Crédito', 'Pix', 'Dinheiro', 'Boleto', 'Transferência', 'Outro'];
 export const STATUS = ['Pago', 'Pendente', 'Aguardando', 'Cancelado'];
-export const TIPOS_CONTA = ['Conta Corrente', 'Poupanca', 'Cartao de Credito', 'Carteira', 'Investimento', 'Outro'];
+export const TIPOS_CONTA = ['Conta Corrente', 'Poupança', 'Cartão de Crédito', 'Carteira', 'Investimento', 'Outro'];
 export const PERFIS = ['admin', 'editor', 'leitor'];
-export const GRUPOS_DESPESA = ['Moradia', 'Alimentacao', 'Transporte', 'Lazer', 'Saude', 'Educacao', 'Compras', 'Taxas', 'Outros'];
+export const GRUPOS_DESPESA = ['Moradia', 'Alimentação', 'Transporte', 'Lazer', 'Saúde', 'Educação', 'Compras', 'Taxas', 'Outros'];
 export const GRUPOS_RECEITA = ['Renda', 'Extras', 'Investimentos', 'Outros'];

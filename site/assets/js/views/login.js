@@ -95,7 +95,7 @@ const view = {
           ${this.botaoTema()}
           <div class="login-logo">₣</div>
           <h1>Criar acesso administrador</h1>
-          <p class="sub">Crie o primeiro usuario administrador do sistema.</p>
+          <p class="sub">Crie o primeiro usuário administrador do sistema.</p>
 
           ${mensagem ? `<div class="toast erro" style="margin-bottom:16px;position:static">
             <span class="ico">${icone('alerta')}</span><span>${esc(mensagem)}</span></div>` : ''}
@@ -112,7 +112,7 @@ const view = {
               <input class="input" id="adm-email" name="email" type="email" required placeholder="voce@email.com">
             </div>
             <div class="campo">
-              <label class="campo-rotulo" for="adm-senha">Senha (minimo 6 caracteres)</label>
+              <label class="campo-rotulo" for="adm-senha">Senha (mínimo 6 caracteres)</label>
               <input class="input" id="adm-senha" name="senha" type="password" required minlength="6">
             </div>
             <button class="btn btn-primario btn-bloco" type="submit" ${criando ? 'disabled' : ''}>
@@ -145,7 +145,7 @@ const view = {
         await store.login(email, senha);
         window.location.reload();
       } catch (e) {
-        mensagem = e.message || 'Nao foi possivel entrar.';
+        mensagem = e.message || 'Não foi possível entrar.';
         if (e.codigo === 'SEM_USUARIOS') modo = 'admin';
       } finally {
         criando = false;
@@ -174,7 +174,7 @@ const view = {
       rerender();
       try {
         await chamar('criaradmininicial', { nome, email, senha });
-        toast('Administrador criado! Agora faca o login.', 'sucesso');
+        toast('Administrador criado! Agora faça o login.', 'sucesso');
         modo = 'login';
         mensagem = '';
       } catch (e) {

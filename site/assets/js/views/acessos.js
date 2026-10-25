@@ -16,7 +16,7 @@ export default {
     if (!store.ehAdmin) {
       return `<div class="pagina"><div class="card"><div class="vazio">
         <div class="icone">🔒</div>
-        <h3>Area restrita</h3>
+        <h3>Área restrita</h3>
         <p>Somente administradores podem gerenciar acessos.</p>
       </div></div></div>`;
     }
@@ -28,11 +28,11 @@ export default {
         <div class="pagina-cabecalho">
           <div class="titulos">
             <h1>Controle de acesso</h1>
-            <p>Usuarios autorizados a usar o app. Os dados vivem na tabela <b>Acessos</b> do Cloudflare D1.</p>
+            <p>Usuários autorizados a usar o app. Os dados vivem na tabela <b>Acessos</b> do Cloudflare D1.</p>
           </div>
           <div class="pagina-acoes">
             <button class="btn btn-pequeno" data-action="recarregar">${icone('atualizar')} Atualizar</button>
-            <button class="btn btn-primario" data-action="novo">${icone('somar')} Novo usuario</button>
+            <button class="btn btn-primario" data-action="novo">${icone('somar')} Novo usuário</button>
           </div>
         </div>
 
@@ -42,13 +42,13 @@ export default {
             <table class="tabela">
               <thead><tr>
                 <th>Nome</th><th>E-mail</th><th style="width:110px">Perfil</th>
-                <th style="width:100px">Situacao</th><th style="width:140px">Ultimo acesso</th><th style="width:150px"></th>
+                <th style="width:100px">Situação</th><th style="width:140px">Último acesso</th><th style="width:150px"></th>
               </tr></thead>
               <tbody>
                 ${linhas.map((u) => `
                   <tr>
                     <td style="font-weight:550">${esc(u.Nome)}
-                      ${u.ID === store.estado.usuario?.ID ? '<span class="badge">voce</span>' : ''}</td>
+                      ${u.ID === store.estado.usuario?.ID ? '<span class="badge">você</span>' : ''}</td>
                     <td class="num-pequeno">${esc(u.Email)}</td>
                     <td><span class="badge badge-${esc(u.Perfil)}">${esc(u.Perfil)}</span></td>
                     <td><span class="badge ${u.Ativo === 'SIM' ? 'badge-pago' : 'badge-pendente'}">${u.Ativo === 'SIM' ? 'ativo' : 'inativo'}</span></td>
@@ -64,8 +64,8 @@ export default {
           </div>` : `
           <div class="vazio">
             <div class="icone">👥</div>
-            <h3>Nenhum usuario listado</h3>
-            <p>Clique em “Atualizar” para carregar a lista de acessos da planilha.</p>
+            <h3>Nenhum usuário listado</h3>
+            <p>Clique em “Atualizar” para carregar a lista de acessos do banco de dados.</p>
           </div>`}
         </div>
 
@@ -74,15 +74,15 @@ export default {
           <div class="grid grid-3">
             <div>
               <span class="badge badge-admin">admin</span>
-              <p class="num-pequeno" style="margin-top:6px">Acesso total: usuarios, configuracoes, lancamentos e limpeza de dados.</p>
+              <p class="num-pequeno" style="margin-top:6px">Acesso total: usuários, configurações, lançamentos e limpeza de dados.</p>
             </div>
             <div>
               <span class="badge badge-editor">editor</span>
-              <p class="num-pequeno" style="margin-top:6px">Cria, edita e exclui lancamentos, categorias, contas e caixinhas.</p>
+              <p class="num-pequeno" style="margin-top:6px">Cria, edita e exclui lançamentos, categorias, contas e caixinhas.</p>
             </div>
             <div>
               <span class="badge badge-leitor">leitor</span>
-              <p class="num-pequeno" style="margin-top:6px">Somente visualizacao e exportacao. Nao altera nada.</p>
+              <p class="num-pequeno" style="margin-top:6px">Somente visualização e exportação. Não altera nada.</p>
             </div>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default {
           dados: { ID: u.ID, Nome: u.Nome, Email: u.Email, Perfil: u.Perfil, Ativo: novo }
         });
         await this.recarregar();
-        toast(novo === 'SIM' ? 'Usuario ativado.' : 'Usuario desativado.', 'sucesso');
+        toast(novo === 'SIM' ? 'Usuário ativado.' : 'Usuário desativado.', 'sucesso');
       } catch (e) {
         toast(e.message, 'erro');
       }
@@ -130,15 +130,15 @@ export default {
       const u = listaUsuarios.find((x) => x.ID === el.dataset.id);
       if (!u) return;
       const ok = await confirmar({
-        titulo: 'Excluir usuario',
-        mensagem: `Excluir o acesso de "${u.Nome}" (${u.Email})? As sessoes ativas dele serao encerradas.`,
+        titulo: 'Excluir usuário',
+        mensagem: `Excluir o acesso de "${u.Nome}" (${u.Email})? As sessões ativas dele serão encerradas.`,
         textoOk: 'Excluir', perigo: true
       });
       if (!ok) return;
       try {
         await store.acao('excluirusuario', { id: u.ID });
         await this.recarregar();
-        toast('Usuario excluido.', 'sucesso');
+        toast('Usuário excluído.', 'sucesso');
       } catch (e) {
         toast(e.message, 'erro');
       }
@@ -177,7 +177,7 @@ function abrirFormulario(u) {
       </div>
       <div class="form-grid">
         <div class="campo">
-          <label class="campo-rotulo" for="u-obs">Observacao</label>
+          <label class="campo-rotulo" for="u-obs">Observação</label>
           <input class="input" id="u-obs" name="Obs" maxlength="200" value="${esc(d.Obs || '')}">
         </div>
         <div class="campo" style="justify-content:flex-end;gap:10px">
@@ -188,7 +188,7 @@ function abrirFormulario(u) {
     </form>`;
 
   const dlg = abrirModal({
-    titulo: edicao ? 'Editar usuario' : 'Novo usuario',
+    titulo: edicao ? 'Editar usuário' : 'Novo usuário',
     corpo,
     rodape: `
       <button type="button" class="btn" data-fechar>Cancelar</button>
@@ -219,7 +219,7 @@ function abrirFormulario(u) {
       try {
         await store.acao('salvarusuario', { dados });
         fecharModal();
-        toast('Usuario salvo!', 'sucesso');
+        toast('Usuário salvo!', 'sucesso');
         const r = await chamar('listarusuarios');
         listaUsuarios = r.usuarios || [];
         window.dispatchEvent(new CustomEvent('app:repintar'));

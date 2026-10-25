@@ -20,7 +20,7 @@ export default {
       <div class="pagina">
         <div class="pagina-cabecalho">
           <div class="titulos">
-            <h1>Contas e cartoes</h1>
+            <h1>Contas e cartões</h1>
             <p>Onde o dinheiro entra e sai. Uso referente a ${esc(mesExtenso(ctx.mes))}.</p>
           </div>
           <div class="pagina-acoes">
@@ -34,7 +34,7 @@ export default {
         <div class="card"><div class="vazio">
           <div class="icone">💳</div>
           <h3>Nenhuma conta cadastrada</h3>
-          <p>Crie a conta corrente, a poupanca e os cartoes de credito para classificar seus lancamentos.</p>
+          <p>Crie a conta corrente, a poupança e os cartões de crédito para classificar seus lançamentos.</p>
           ${store.podeEditar ? '<button class="btn btn-primario" data-action="nova">Criar primeira conta</button>' : ''}
         </div></div>`}
       </div>`;
@@ -53,13 +53,13 @@ export default {
       if (!c) return;
       const ok = await confirmar({
         titulo: 'Excluir conta',
-        mensagem: `Excluir a conta "${c.Nome}"? Se houver lancamentos vinculados, a exclusao sera bloqueada.`,
+        mensagem: `Excluir a conta "${c.Nome}"? Se houver lançamentos vinculados, a exclusão será bloqueada.`,
         textoOk: 'Excluir', perigo: true
       });
       if (!ok) return;
       try {
         await store.acao('excluirconta', { id: c.ID });
-        toast('Conta excluida.', 'sucesso');
+        toast('Conta excluída.', 'sucesso');
       } catch (e) {
         toast(e.message, 'erro');
       }
@@ -89,7 +89,7 @@ function cartaoConta(c, lancamentosDoMes) {
 
       <div class="caixinha-info">
         <span>Entradas <b>${moeda(entradas, { compacto: true })}</b></span>
-        <span>Saidas <b>${moeda(saidas, { compacto: true })}</b></span>
+        <span>Saídas <b>${moeda(saidas, { compacto: true })}</b></span>
       </div>
 
       ${limite > 0 ? `
@@ -99,7 +99,7 @@ function cartaoConta(c, lancamentosDoMes) {
           <span>${c.DiaVencimento ? `Vence dia ${c.DiaVencimento}` : 'Sem vencimento'}</span>
         </div>` : `
         <div class="caixinha-info">
-          <span>${doMes.length} lancamento(s) no mes</span>
+          <span>${doMes.length} lançamento(s) no mês</span>
           <span>${c.DiaVencimento ? `Vence dia ${c.DiaVencimento}` : ''}</span>
         </div>`}
 
@@ -132,11 +132,11 @@ function abrirFormulario(c) {
       </div>
       <div class="form-grid">
         <div class="campo">
-          <label class="campo-rotulo" for="k-inst">Instituicao</label>
+          <label class="campo-rotulo" for="k-inst">Instituição</label>
           <input class="input" id="k-inst" name="Instituicao" maxlength="60" value="${esc(d.Instituicao || '')}">
         </div>
         <div class="campo">
-          <label class="campo-rotulo" for="k-limite">Limite (cartao)</label>
+          <label class="campo-rotulo" for="k-limite">Limite (cartão)</label>
           <input class="input" id="k-limite" name="Limite" inputmode="decimal" placeholder="0,00"
                  value="${d.Limite ? esc(d.Limite) : ''}">
         </div>
@@ -158,7 +158,7 @@ function abrirFormulario(c) {
       </div>
       <div class="form-grid">
         <div class="campo">
-          <label class="campo-rotulo" for="k-obs">Observacao</label>
+          <label class="campo-rotulo" for="k-obs">Observação</label>
           <input class="input" id="k-obs" name="Obs" maxlength="200" value="${esc(d.Obs || '')}">
         </div>
         <div class="campo" style="justify-content:flex-end;gap:10px">

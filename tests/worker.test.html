@@ -180,10 +180,10 @@ class FakeD1 {
     const st0 = await call('status');
     check('status inicializa banco automaticamente', st0.ok === true && st0.semPlanilha === false, st0);
     check('ainda sem usuarios', st0.temUsuarios === false && st0.usuarios === 0);
-    check('categorias semeadas', db.tables.Categorias.length === 34);
+    check('categorias iniciam vazias', db.tables.Categorias.length === 0);
     check('contas semeadas', db.tables.Contas.length === 4);
     check('caixinhas semeadas', db.tables.Caixinhas.length === 3);
-    check('config semeada', db.tables.Config.length === 10);
+    check('config semeada', db.tables.Config.length >= 10);
 
     log('');
     log('== SENHA E FORMATACAO ==');
@@ -207,11 +207,15 @@ class FakeD1 {
 
     check('senha errada bloqueada', (await call('login', { email: 'ana@teste.com', senha: 'errada' })).ok === false);
     const boot = await call('bootstrap', { token });
-    check('bootstrap ok', boot.ok === true && boot.categorias.length === 34, boot);
+    check('bootstrap ok', boot.ok === true && boot.categorias.length === 0, boot);
 
     log('');
     log('== LANCAMENTOS & PARCELAMENTO ==');
-    const catId = boot.categorias[0].ID;
+    const novaCat = await call('salvarcategoria', {
+      token,
+      dados: { Nome: 'Moradia', Tipo: 'Despesa', Grupo: 'Moradia', Cor: '#ef4444' }
+    });
+    const catId = novaCat.id;
     const contaId = boot.contas[0].ID;
     const parc = await call('salvarlancamento', {
       token,

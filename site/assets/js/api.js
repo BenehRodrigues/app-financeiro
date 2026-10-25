@@ -69,7 +69,7 @@ export class ErroApi extends Error {
 export async function chamar(acao, dados = {}) {
   const url = getApiUrl();
   if (!url) {
-    throw new ErroApi('API nao configurada. Informe a URL do seu Cloudflare Worker.', 'SEM_API');
+    throw new ErroApi('API não configurada. Informe a URL do seu Cloudflare Worker.', 'SEM_API');
   }
 
   const corpo = JSON.stringify({ acao, token: getToken(), ...dados });
@@ -89,9 +89,9 @@ export async function chamar(acao, dados = {}) {
   } catch (e) {
     clearTimeout(timer);
     if (e.name === 'AbortError') {
-      throw new ErroApi('A requisicao demorou demais. Verifique sua conexao.', 'TIMEOUT');
+      throw new ErroApi('A requisição demorou demais. Verifique sua conexão.', 'TIMEOUT');
     }
-    throw new ErroApi('Nao foi possivel falar com o servidor. Verifique a URL da API.', 'SEM_CONEXAO');
+    throw new ErroApi('Não foi possível falar com o servidor. Verifique a URL da API.', 'SEM_CONEXAO');
   }
   clearTimeout(timer);
 
@@ -101,7 +101,7 @@ export async function chamar(acao, dados = {}) {
     dadosResp = JSON.parse(texto);
   } catch (e) {
     throw new ErroApi(
-      'Resposta invalida do servidor. Confira se a URL aponta para o seu Cloudflare Worker.',
+      'Resposta inválida do servidor. Confira se a URL aponta para o seu Cloudflare Worker.',
       'RESPOSTA_INVALIDA'
     );
   }

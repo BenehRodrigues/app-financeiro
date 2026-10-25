@@ -157,67 +157,30 @@ export const SCHEMA = {
 };
 
 /* =====================================================================
- * DADOS PADRAO (SEED INICIAL)
+ * DADOS PADRÃO (SEED INICIAL)
  * ===================================================================== */
 const SEED_CONFIG = [
   ['cfg-1', 'nome_app', 'Controle Financeiro', 'Nome exibido no topo do app'],
-  ['cfg-2', 'simbolo_moeda', 'R$', 'Simbolo usado para formatar valores'],
-  ['cfg-3', 'locale', 'pt-BR', 'Formato de data e numero'],
+  ['cfg-2', 'simbolo_moeda', 'R$', 'Símbolo usado para formatar valores'],
+  ['cfg-3', 'locale', 'pt-BR', 'Formato de data e número'],
   ['cfg-4', 'mostrar_centavos', 'SIM', 'Mostrar centavos nos valores'],
-  ['cfg-5', 'atualizacao_auto_seg', '60', 'Atualizacao automatica da tela (segundos). 0 = desliga'],
-  ['cfg-6', 'permitir_parcelas', 'SIM', 'Permitir lancamentos parcelados'],
+  ['cfg-5', 'atualizacao_auto_seg', '60', 'Atualização automática da tela (segundos). 0 = desliga'],
+  ['cfg-6', 'permitir_parcelas', 'SIM', 'Permitir lançamentos parcelados'],
   ['cfg-7', 'tema_padrao', 'escuro', 'escuro | claro'],
   ['cfg-8', 'cor_primaria', '#22c55e', 'Cor de destaque do app'],
   ['cfg-9', 'alerta_saldo_negativo', 'SIM', 'Destacar saldo negativo no painel'],
-  ['cfg-10', 'mostrar_projecao', 'SIM', 'Exibir projecao de gastos fixos/recorrentes']
-];
-
-const SEED_CATEGORIAS = [
-  ['cat-01', 'Aluguel', 'Despesa', 'Moradia', '#ef4444'],
-  ['cat-02', 'Condominio', 'Despesa', 'Moradia', '#f97316'],
-  ['cat-03', 'Energia eletrica', 'Despesa', 'Moradia', '#eab308'],
-  ['cat-04', 'Agua', 'Despesa', 'Moradia', '#38bdf8'],
-  ['cat-05', 'Gas', 'Despesa', 'Moradia', '#f59e0b'],
-  ['cat-06', 'Internet', 'Despesa', 'Moradia', '#0ea5e9'],
-  ['cat-07', 'IPTU', 'Despesa', 'Moradia', '#a855f7'],
-  ['cat-08', 'Mercado', 'Despesa', 'Alimentacao', '#22c55e'],
-  ['cat-09', 'Restaurante', 'Despesa', 'Alimentacao', '#16a34a'],
-  ['cat-10', 'Delivery', 'Despesa', 'Alimentacao', '#4ade80'],
-  ['cat-11', 'Combustivel', 'Despesa', 'Transporte', '#14b8a6'],
-  ['cat-12', 'Uber / 99', 'Despesa', 'Transporte', '#2dd4bf'],
-  ['cat-13', 'Estacionamento', 'Despesa', 'Transporte', '#64748b'],
-  ['cat-14', 'Manutencao do carro', 'Despesa', 'Transporte', '#f97316'],
-  ['cat-15', 'Cinema e lazer', 'Despesa', 'Lazer', '#ec4899'],
-  ['cat-16', 'Assinaturas', 'Despesa', 'Lazer', '#d946ef'],
-  ['cat-17', 'Viagem', 'Despesa', 'Lazer', '#f43f5e'],
-  ['cat-18', 'Farmacia', 'Despesa', 'Saude', '#22d3ee'],
-  ['cat-19', 'Plano de saude', 'Despesa', 'Saude', '#06b6d4'],
-  ['cat-20', 'Cursos', 'Despesa', 'Educacao', '#818cf8'],
-  ['cat-21', 'Compras', 'Despesa', 'Compras', '#f43f5e'],
-  ['cat-22', 'Juros do cartao', 'Despesa', 'Taxas', '#ef4444'],
-  ['cat-23', 'Impostos', 'Despesa', 'Taxas', '#b91c1c'],
-  ['cat-24', 'Outros', 'Despesa', 'Outros', '#94a3b8'],
-  ['cat-25', 'Salario', 'Receita', 'Renda', '#22c55e'],
-  ['cat-26', '13o salario', 'Receita', 'Renda', '#16a34a'],
-  ['cat-27', 'Ferias', 'Receita', 'Renda', '#4ade80'],
-  ['cat-28', 'Bonus', 'Receita', 'Extras', '#eab308'],
-  ['cat-29', 'Comissao', 'Receita', 'Extras', '#f59e0b'],
-  ['cat-30', 'Freela', 'Receita', 'Extras', '#84cc16'],
-  ['cat-31', 'Reembolso', 'Receita', 'Extras', '#a3e635'],
-  ['cat-32', 'Dividendos', 'Receita', 'Investimentos', '#2dd4bf'],
-  ['cat-33', 'Rendimentos', 'Receita', 'Investimentos', '#22d3ee'],
-  ['cat-34', 'Aportes', 'Receita', 'Investimentos', '#38bdf8']
+  ['cfg-10', 'mostrar_projecao', 'SIM', 'Exibir projeção de gastos fixos/recorrentes']
 ];
 
 const SEED_CONTAS = [
   ['cnt-01', 'Conta Corrente', 'Conta Corrente', '', 0, 0, '#3b82f6'],
-  ['cnt-02', 'Poupanca', 'Poupanca', '', 0, 0, '#22c55e'],
-  ['cnt-03', 'Cartao de Credito', 'Cartao de Credito', '', 0, 10, '#f43f5e'],
+  ['cnt-02', 'Poupança', 'Poupança', '', 0, 0, '#22c55e'],
+  ['cnt-03', 'Cartão de Crédito', 'Cartão de Crédito', '', 0, 10, '#f43f5e'],
   ['cnt-04', 'Carteira', 'Carteira', '', 0, 0, '#eab308']
 ];
 
 const SEED_CAIXINHAS = [
-  ['cx-01', 'Reserva de Emergencia', 'Gasto inesperado', 12000, '', '#22c55e'],
+  ['cx-01', 'Reserva de Emergência', 'Gasto inesperado', 12000, '', '#22c55e'],
   ['cx-02', 'Viagem', 'Fundo para viagens', 5000, '', '#0ea5e9'],
   ['cx-03', 'Investimentos', 'Aportes para investimento', 30000, '', '#a855f7']
 ];
@@ -533,7 +496,7 @@ export function obterDB(env) {
 export async function garantirBanco(db, forcar = false) {
   if (!db) {
     throw erroObj(
-      'Banco D1 nao vinculado ao Worker. No painel da Cloudflare, va em Worker > Settings > Bindings e adicione o D1 Database com nome de variavel "DB".',
+      'Banco D1 não vinculado ao Worker. No painel da Cloudflare, vá em Worker > Settings > Bindings e adicione o D1 Database com nome de variável "DB".',
       'SEM_BANCO'
     );
   }
@@ -552,21 +515,13 @@ export async function garantirBanco(db, forcar = false) {
     }
   }
 
-  // Verifica se precisa semear Config, Categorias, Contas e Caixinhas
+  // Verifica se precisa semear Config, Contas e Caixinhas (Categorias iniciam vazias)
   const cntCfg = await db.prepare('SELECT COUNT(*) AS n FROM Config').first();
   if (Number(cntCfg?.n || 0) === 0) {
     const ts = agora();
     for (const [id, chave, valor, desc] of SEED_CONFIG) {
       await db.prepare('INSERT OR IGNORE INTO Config (ID, Chave, Valor, Descricao) VALUES (?, ?, ?, ?)')
         .bind(id, chave, valor, desc).run();
-    }
-
-    const cntCat = await db.prepare('SELECT COUNT(*) AS n FROM Categorias').first();
-    if (Number(cntCat?.n || 0) === 0) {
-      for (const [id, nome, tipo, grupo, cor] of SEED_CATEGORIAS) {
-        await db.prepare('INSERT OR IGNORE INTO Categorias (ID, Nome, Tipo, Grupo, Cor, OrcamentoMensal, Ativo, Obs, CriadoEm) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)')
-          .bind(id, nome, tipo, grupo, cor, 'SIM', '', ts).run();
-      }
     }
 
     const cntCnt = await db.prepare('SELECT COUNT(*) AS n FROM Contas').first();
@@ -584,6 +539,20 @@ export async function garantirBanco(db, forcar = false) {
           .bind(id, nome, desc, meta, prazo, cor, 'SIM', ts, 'setup').run();
       }
     }
+  }
+
+  // Limpeza única das categorias pré-cadastradas anteriormente e ajuste de acentuação nos registros iniciais
+  const jaLimpouCat = await db.prepare('SELECT Valor FROM Config WHERE Chave = ? LIMIT 1').bind('categorias_limpas_v1').first();
+  if (!jaLimpouCat) {
+    await db.prepare('DELETE FROM Categorias').run();
+    await db.prepare('INSERT OR IGNORE INTO Config (ID, Chave, Valor, Descricao) VALUES (?, ?, ?, ?)')
+      .bind('cfg-cat-limpas', 'categorias_limpas_v1', 'SIM', 'Categorias iniciais excluídas').run();
+    await db.prepare('UPDATE Contas SET Nome = ?, Tipo = ? WHERE ID = ?')
+      .bind('Poupança', 'Poupança', 'cnt-02').run();
+    await db.prepare('UPDATE Contas SET Nome = ?, Tipo = ? WHERE ID = ?')
+      .bind('Cartão de Crédito', 'Cartão de Crédito', 'cnt-03').run();
+    await db.prepare('UPDATE Caixinhas SET Nome = ? WHERE ID = ?')
+      .bind('Reserva de Emergência', 'cx-01').run();
   }
 
   return { criado: !jaExiste };
@@ -609,24 +578,24 @@ async function logAcao(db, usuario, acao, entidade, entidadeId, detalhes) {
 }
 
 /* =====================================================================
- * AUTENTICACAO E PERMISSOES
+ * AUTENTICAÇÃO E PERMISSÕES
  * ===================================================================== */
 export async function autenticar(db, req) {
   const token = String(req?.token || '').trim();
-  if (!token) throw erroObj('Sessao expirada. Faca login novamente.', 'NAO_AUTENTICADO');
+  if (!token) throw erroObj('Sessão expirada. Faça login novamente.', 'NAO_AUTENTICADO');
 
   const sessao = await db.prepare('SELECT * FROM Sessoes WHERE Token = ? LIMIT 1').bind(token).first();
   if (!sessao || String(sessao.Ativo || '').toUpperCase() !== 'SIM') {
-    throw erroObj('Sessao invalida. Faca login novamente.', 'NAO_AUTENTICADO');
+    throw erroObj('Sessão inválida. Faça login novamente.', 'NAO_AUTENTICADO');
   }
   if (!sessao.ExpiraEm || String(sessao.ExpiraEm) < agora()) {
-    throw erroObj('Sessao expirada. Faca login novamente.', 'NAO_AUTENTICADO');
+    throw erroObj('Sessão expirada. Faça login novamente.', 'NAO_AUTENTICADO');
   }
 
   const u = await db.prepare('SELECT * FROM Acessos WHERE ID = ? LIMIT 1').bind(sessao.UsuarioID).first();
-  if (!u) throw erroObj('Usuario nao encontrado.', 'NAO_AUTENTICADO');
+  if (!u) throw erroObj('Usuário não encontrado.', 'NAO_AUTENTICADO');
   if (String(u.Ativo || '').toUpperCase() !== 'SIM') {
-    throw erroObj('Usuario desativado. Procure o administrador.', 'SEM_PERMISSAO');
+    throw erroObj('Usuário desativado. Procure o administrador.', 'SEM_PERMISSAO');
   }
 
   return { token, usuario: u, sessao };
@@ -635,7 +604,7 @@ export async function autenticar(db, req) {
 function exigirPerfil(ctx, perfis) {
   const p = String(ctx.usuario.Perfil || '').toLowerCase();
   if (!perfis.includes(p)) {
-    throw erroObj(`Seu perfil (${ctx.usuario.Perfil}) nao permite esta operacao.`, 'SEM_PERMISSAO');
+    throw erroObj(`Seu perfil (${ctx.usuario.Perfil}) não permite esta operação.`, 'SEM_PERMISSAO');
   }
 }
 
@@ -696,12 +665,12 @@ async function executarAcaoAutenticada(db, acao, req, ctx) {
     case 'limpar': return await acaoLimpar(db, req, ctx);
 
     default:
-      throw erroObj(`Acao desconhecida: ${acao}`, 'ACAO_INVALIDA');
+      throw erroObj(`Ação desconhecida: ${acao}`, 'ACAO_INVALIDA');
   }
 }
 
 /* =====================================================================
- * IMPLEMENTACAO DAS ACOES
+ * IMPLEMENTAÇÃO DAS AÇÕES
  * ===================================================================== */
 async function acaoStatus(db) {
   const agora_ = agora();
@@ -710,7 +679,7 @@ async function acaoStatus(db) {
       ok: true,
       semPlanilha: true,
       semBanco: true,
-      erro: 'Banco D1 nao vinculado ao Worker (adicione o binding DB nas configuracoes do Worker).',
+      erro: 'Banco D1 não vinculado ao Worker (adicione o binding DB nas configurações do Worker).',
       pronto: false,
       temUsuarios: false,
       usuarios: 0,
@@ -809,14 +778,14 @@ async function acaoLogin(db, req) {
 
   const cnt = await db.prepare('SELECT COUNT(*) AS n FROM Acessos').first();
   if (Number(cnt?.n || 0) === 0) {
-    throw erroObj('Nenhum usuario cadastrado no banco. Crie o acesso administrador inicial na tela de login.', 'SEM_USUARIOS');
+    throw erroObj('Nenhum usuário cadastrado no banco. Crie o acesso administrador inicial na tela de login.', 'SEM_USUARIOS');
   }
   if (!email || !senha) throw erroObj('Informe e-mail e senha.', 'DADOS');
 
   const u = await db.prepare('SELECT * FROM Acessos WHERE LOWER(Email) = ? LIMIT 1').bind(email).first();
-  if (!u) throw erroObj('Usuario nao encontrado.', 'CREDENCIAIS');
+  if (!u) throw erroObj('Usuário não encontrado.', 'CREDENCIAIS');
   if (String(u.Ativo || '').toUpperCase() !== 'SIM') {
-    throw erroObj('Usuario desativado. Procure o administrador.', 'CREDENCIAIS');
+    throw erroObj('Usuário desativado. Procure o administrador.', 'CREDENCIAIS');
   }
   if (!(await validarSenha(senha, u))) {
     throw erroObj('Senha incorreta.', 'CREDENCIAIS');
@@ -845,7 +814,7 @@ async function acaoLogin(db, req) {
 async function acaoCriarAdminInicial(db, req) {
   const cnt = await db.prepare('SELECT COUNT(*) AS n FROM Acessos').first();
   if (Number(cnt?.n || 0) > 0) {
-    throw erroObj('Ja existe usuario cadastrado. Use o painel de Acessos.', 'JA_EXISTE');
+    throw erroObj('Já existe usuário cadastrado. Use o painel de Acessos.', 'JA_EXISTE');
   }
 
   const nome = String(req?.nome || '').trim();
@@ -854,7 +823,7 @@ async function acaoCriarAdminInicial(db, req) {
 
   if (!nome || !email) throw erroObj('Informe nome e e-mail.', 'DADOS');
   if (senha.length < 6) throw erroObj('A senha precisa de 6 caracteres ou mais.', 'DADOS');
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw erroObj('E-mail invalido.', 'DADOS');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw erroObj('E-mail inválido.', 'DADOS');
 
   const salt = gerarSalt();
   const senhaHash = await hashSenha(senha, salt);
@@ -877,19 +846,19 @@ async function acaoLogout(db, ctx) {
   return { ok: true };
 }
 
-/* --------------------------- lancamentos ---------------------------- */
+/* --------------------------- lançamentos ---------------------------- */
 async function acaoSalvarLancamento(db, req, ctx) {
   exigirPerfil(ctx, ['admin', 'editor']);
   const d = req?.dados || {};
 
   const dataObj = parseData(d.Data);
-  if (!dataObj) throw erroObj('Informe uma data valida.', 'DADOS');
+  if (!dataObj) throw erroObj('Informe uma data válida.', 'DADOS');
 
   const valor = Number(String(d.Valor === undefined || d.Valor === null ? '' : d.Valor).replace(',', '.'));
   if (!isFinite(valor) || valor <= 0) throw erroObj('O valor deve ser maior que zero.', 'DADOS');
 
   const descricao = String(d.Descricao || '').trim();
-  if (!descricao) throw erroObj('Informe uma descricao.', 'DADOS');
+  if (!descricao) throw erroObj('Informe uma descrição.', 'DADOS');
 
   const tipo = String(d.Tipo || '').toLowerCase() === 'receita' ? 'Receita' : 'Despesa';
   const parcelas = Math.max(1, Math.min(60, parseInt(d.Parcelas || 1, 10) || 1));
@@ -994,10 +963,10 @@ async function acaoSalvarLancamento(db, req, ctx) {
 async function acaoExcluirLancamento(db, req, ctx) {
   exigirPerfil(ctx, ['admin', 'editor']);
   const id = String(req?.id || '').trim();
-  if (!id) throw erroObj('Informe o ID do lancamento.', 'DADOS');
+  if (!id) throw erroObj('Informe o ID do lançamento.', 'DADOS');
 
   const alvo = await db.prepare('SELECT * FROM Lancamentos WHERE ID = ? LIMIT 1').bind(id).first();
-  if (!alvo) throw erroObj('Lancamento nao encontrado.', 'NAO_ENCONTRADO');
+  if (!alvo) throw erroObj('Lançamento não encontrado.', 'NAO_ENCONTRADO');
 
   let removidas = 1;
   if (req?.excluirGrupo && alvo.GrupoParcelas) {
@@ -1024,7 +993,7 @@ async function acaoSalvarCategoria(db, req, ctx) {
   const duplicada = await db.prepare('SELECT * FROM Categorias WHERE LOWER(Nome) = ? LIMIT 1')
     .bind(nome.toLowerCase()).first();
   if (duplicada && String(duplicada.ID) !== String(d.ID || '')) {
-    throw erroObj('Ja existe uma categoria com esse nome.', 'DUPLICADO');
+    throw erroObj('Já existe uma categoria com esse nome.', 'DUPLICADO');
   }
 
   const id = d.ID ? String(d.ID) : novoId();
@@ -1054,7 +1023,7 @@ async function acaoExcluirCategoria(db, req, ctx) {
   const cnt = await db.prepare('SELECT COUNT(*) AS n FROM Lancamentos WHERE CategoriaID = ?').bind(id).first();
   const emUso = Number(cnt?.n || 0);
   if (emUso > 0) {
-    throw erroObj(`Esta categoria esta em uso por ${emUso} lancamento(s). Desative-a em vez de excluir.`, 'EM_USO');
+    throw erroObj(`Esta categoria está em uso por ${emUso} lançamento(s). Desative-a em vez de excluir.`, 'EM_USO');
   }
   await db.prepare('DELETE FROM Categorias WHERE ID = ?').bind(id).run();
   await logAcao(db, ctx.usuario, 'excluir', 'Categorias', id, '');
@@ -1071,7 +1040,7 @@ async function acaoSalvarConta(db, req, ctx) {
   const duplicada = await db.prepare('SELECT * FROM Contas WHERE LOWER(Nome) = ? LIMIT 1')
     .bind(nome.toLowerCase()).first();
   if (duplicada && String(duplicada.ID) !== String(d.ID || '')) {
-    throw erroObj('Ja existe uma conta com esse nome.', 'DUPLICADO');
+    throw erroObj('Já existe uma conta com esse nome.', 'DUPLICADO');
   }
 
   const id = d.ID ? String(d.ID) : novoId();
@@ -1103,7 +1072,7 @@ async function acaoExcluirConta(db, req, ctx) {
   const cnt = await db.prepare('SELECT COUNT(*) AS n FROM Lancamentos WHERE ContaID = ?').bind(id).first();
   const emUso = Number(cnt?.n || 0);
   if (emUso > 0) {
-    throw erroObj(`Esta conta esta em uso por ${emUso} lancamento(s). Desative-a em vez de excluir.`, 'EM_USO');
+    throw erroObj(`Esta conta está em uso por ${emUso} lançamento(s). Desative-a em vez de excluir.`, 'EM_USO');
   }
   await db.prepare('DELETE FROM Contas WHERE ID = ?').bind(id).run();
   await logAcao(db, ctx.usuario, 'excluir', 'Contas', id, '');
@@ -1148,7 +1117,7 @@ async function acaoExcluirCaixinha(db, req, ctx) {
   await db.prepare('DELETE FROM Movimentacoes WHERE CaixinhaID = ?').bind(id).run();
   await db.prepare('DELETE FROM Caixinhas WHERE ID = ?').bind(id).run();
 
-  await logAcao(db, ctx.usuario, 'excluir', 'Caixinhas', id, `${movs} movimentacao(oes) removida(s)`);
+  await logAcao(db, ctx.usuario, 'excluir', 'Caixinhas', id, `${movs} movimentação(ões) removida(s)`);
   return { ok: true, movsRemovidas: movs };
 }
 
@@ -1159,14 +1128,14 @@ async function acaoMovimentarCaixinha(db, req, ctx) {
   if (!idCaixinha) throw erroObj('Informe a caixinha.', 'DADOS');
 
   const cx = await db.prepare('SELECT ID FROM Caixinhas WHERE ID = ? LIMIT 1').bind(idCaixinha).first();
-  if (!cx) throw erroObj('Caixinha nao encontrada.', 'NAO_ENCONTRADO');
+  if (!cx) throw erroObj('Caixinha não encontrada.', 'NAO_ENCONTRADO');
 
   const valor = Number(String(d.Valor || 0).replace(',', '.'));
   if (!isFinite(valor) || valor <= 0) throw erroObj('O valor deve ser maior que zero.', 'DADOS');
   const valorArredondado = Math.round(valor * 100) / 100;
 
   const dataStr = fmtData(parseData(d.Data) || new Date());
-  const tipo = String(d.Tipo || '').toLowerCase().includes('sai') ? 'Saida' : 'Entrada';
+  const tipo = String(d.Tipo || '').toLowerCase().includes('sai') || String(d.Tipo || '').toLowerCase().includes('saí') ? 'Saída' : 'Entrada';
   const id = novoId();
 
   await db.prepare(
@@ -1193,7 +1162,7 @@ async function acaoExcluirMovimentacao(db, req, ctx) {
   return { ok: true };
 }
 
-/* --------------------------- usuarios ------------------------------- */
+/* --------------------------- usuários ------------------------------- */
 async function acaoSalvarUsuario(db, req, ctx) {
   exigirPerfil(ctx, ['admin']);
   const d = req?.dados || {};
@@ -1201,14 +1170,14 @@ async function acaoSalvarUsuario(db, req, ctx) {
   const nome = String(d.Nome || '').trim();
   const email = String(d.Email || '').trim().toLowerCase();
   if (!nome) throw erroObj('Informe o nome.', 'DADOS');
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw erroObj('Informe um e-mail valido.', 'DADOS');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw erroObj('Informe um e-mail válido.', 'DADOS');
 
   const existente = d.ID
     ? await db.prepare('SELECT * FROM Acessos WHERE ID = ? LIMIT 1').bind(String(d.ID)).first()
     : null;
   const outro = await db.prepare('SELECT * FROM Acessos WHERE LOWER(Email) = ? LIMIT 1').bind(email).first();
   if (outro && String(outro.ID) !== String(d.ID || '')) {
-    throw erroObj('Ja existe um usuario com esse e-mail.', 'DUPLICADO');
+    throw erroObj('Já existe um usuário com esse e-mail.', 'DUPLICADO');
   }
 
   const perfil = ['admin', 'editor', 'leitor'].includes(String(d.Perfil || '').toLowerCase())
@@ -1229,7 +1198,7 @@ async function acaoSalvarUsuario(db, req, ctx) {
       await db.prepare('DELETE FROM Sessoes WHERE UsuarioID = ?').bind(existente.ID).run();
     }
   } else if (!existente) {
-    throw erroObj('Defina uma senha para o novo usuario.', 'DADOS');
+    throw erroObj('Defina uma senha para o novo usuário.', 'DADOS');
   }
 
   const obs = String(d.Obs ?? (existente ? existente.Obs : ''));
@@ -1269,7 +1238,7 @@ async function acaoExcluirUsuario(db, req, ctx) {
   exigirPerfil(ctx, ['admin']);
   const id = String(req?.id || '').trim();
   if (id === String(ctx.usuario.ID)) {
-    throw erroObj('Voce nao pode excluir o proprio usuario.', 'DADOS');
+    throw erroObj('Você não pode excluir o próprio usuário.', 'DADOS');
   }
   await db.prepare('DELETE FROM Sessoes WHERE UsuarioID = ?').bind(id).run();
   await db.prepare('DELETE FROM Acessos WHERE ID = ?').bind(id).run();
@@ -1292,14 +1261,14 @@ async function acaoTrocarSenha(db, req, ctx) {
   await db.prepare('DELETE FROM Sessoes WHERE UsuarioID = ?').bind(ctx.usuario.ID).run();
 
   await logAcao(db, ctx.usuario, 'senha', 'Acessos', ctx.usuario.ID, 'Senha alterada');
-  return { ok: true, mensagem: 'Senha alterada. Faca login novamente.' };
+  return { ok: true, mensagem: 'Senha alterada. Faça login novamente.' };
 }
 
-/* --------------------------- config / manutencao -------------------- */
+/* --------------------------- config / manutenção -------------------- */
 async function acaoSalvarConfig(db, req, ctx) {
   exigirPerfil(ctx, ['admin']);
   const chave = String(req?.chave || '').trim();
-  if (!chave) throw erroObj('Informe a chave de configuracao.', 'DADOS');
+  if (!chave) throw erroObj('Informe a chave de configuração.', 'DADOS');
   const valor = String(req?.valor === undefined || req?.valor === null ? '' : req.valor);
 
   const atual = await db.prepare('SELECT * FROM Config WHERE LOWER(Chave) = ? LIMIT 1')
@@ -1319,7 +1288,7 @@ async function acaoSalvarConfig(db, req, ctx) {
 async function acaoLimpar(db, req, ctx) {
   exigirPerfil(ctx, ['admin']);
   if (String(req?.confirmar || '') !== 'APAGAR TUDO') {
-    throw erroObj('Confirmacao invalida. Digite exatamente APAGAR TUDO.', 'DADOS');
+    throw erroObj('Confirmação inválida. Digite exatamente APAGAR TUDO.', 'DADOS');
   }
 
   const [c1, c2, c3] = await Promise.all([
@@ -1367,7 +1336,7 @@ export default {
       } catch (e) {
         return jsonResponse({
           ok: false,
-          erro: 'Requisicao invalida (JSON malformado).',
+          erro: 'Requisição inválida (JSON malformado).',
           codigo: 'JSON_INVALIDO'
         });
       }
@@ -1384,7 +1353,7 @@ export default {
       }
     }
 
-    // Se o Worker tambem serve os arquivos estaticos do site (Cloudflare Workers Assets)
+    // Se o Worker também serve os arquivos estáticos do site (Cloudflare Workers Assets)
     if (request.method === 'GET' && !isApiRoute && env && env.ASSETS && typeof env.ASSETS.fetch === 'function') {
       return env.ASSETS.fetch(request);
     }
@@ -1395,7 +1364,7 @@ export default {
       app: 'Controle Financeiro',
       versao: '2.0.0',
       banco: 'Cloudflare D1',
-      dica: 'Use POST (JSON) para as operacoes. Ver docs/API.md.'
+      dica: 'Use POST (JSON) para as operações. Ver docs/API.md.'
     });
   }
 };

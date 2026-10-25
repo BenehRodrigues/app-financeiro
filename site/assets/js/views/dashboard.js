@@ -60,8 +60,8 @@ export default {
           <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
             <span style="color:var(--warning);font-size:18px">${icone('alerta')}</span>
             <div style="flex:1;min-width:200px">
-              <div style="font-weight:600;font-size:14px">Nenhum lancamento em ${esc(mesExtenso(mes))}</div>
-              <div class="num-pequeno">Seus lancamentos estao em outros meses. Use as setas ao lado do logo para mudar o mes.</div>
+              <div style="font-weight:600;font-size:14px">Nenhum lançamento em ${esc(mesExtenso(mes))}</div>
+              <div class="num-pequeno">Seus lançamentos estão em outros meses. Use as setas ao lado do logo para mudar o mês.</div>
             </div>
             <div class="chips">
               ${mesesComDados.slice(0, 6).map((m) => `
@@ -71,10 +71,10 @@ export default {
         </div>` : ''}
 
         <div class="kpis">
-          ${kpi('Receitas do mes', moeda(resumoMes.receitas), 'receita', '', '#22c55e')}
-          ${kpi('Despesas do mes', moeda(resumoMes.despesas), 'despesa', '', '#f43f5e')}
-          ${kpi('Saldo do mes', moeda(resumoMes.saldo), resumoMes.saldo >= 0 ? 'receita' : 'despesa',
-            `Taxa de poupanca ${porcento(taxaPoupanca)}`, resumoMes.saldo >= 0 ? '#22c55e' : '#f43f5e')}
+          ${kpi('Receitas do mês', moeda(resumoMes.receitas), 'receita', '', '#22c55e')}
+          ${kpi('Despesas do mês', moeda(resumoMes.despesas), 'despesa', '', '#f43f5e')}
+          ${kpi('Saldo do mês', moeda(resumoMes.saldo), resumoMes.saldo >= 0 ? 'receita' : 'despesa',
+            `Taxa de poupança ${porcento(taxaPoupanca)}`, resumoMes.saldo >= 0 ? '#22c55e' : '#f43f5e')}
           ${kpi('Gastos fixos', moeda(fixosValor), '', `${fixos.length} item(ns)`, '#38bdf8')}
           ${kpi('Total nas caixinhas', moeda(totalCaixinhas), '', `Meta ${moeda(metaCaixinhas)}`, '#a855f7')}
           ${kpi('A pagar (pendente)', moeda(resumoMes.pendentes), 'despesa', '', '#f59e0b')}
@@ -83,7 +83,7 @@ export default {
         <div class="grid grid-2">
           <div class="card">
             <div class="card-cabecalho">
-              <h3>Receitas x Despesas</h3>
+              <h3>Receitas × Despesas</h3>
               <span class="sub">12 meses</span>
             </div>
             <div class="card-corpo">
@@ -122,7 +122,7 @@ export default {
                       <span class="ponto" style="background:${CORES[i % CORES.length]}"></span>
                       ${esc(c.rotulo)} <b>${moeda(c.valor, { compacto: true })}</b>
                     </span>`).join('')}
-                </div>` : '<div class="vazio"><p>Nenhuma despesa neste mes.</p></div>'}
+                </div>` : '<div class="vazio"><p>Nenhuma despesa neste mês.</p></div>'}
             </div>
           </div>
         </div>
@@ -139,13 +139,13 @@ export default {
                     cor: (store.categoriaPorId(c.chave)?.Cor) || CORES[i % CORES.length]
                   })),
                   formatador: (v) => moeda(v, { compacto: true })
-                })}</div>` : '<div class="vazio"><p>Sem dados no periodo.</p></div>'}
+                })}</div>` : '<div class="vazio"><p>Sem dados no período.</p></div>'}
             </div>
           </div>
 
           <div class="card">
             <div class="card-cabecalho">
-              <h3>Projecao do mes</h3>
+              <h3>Projeção do mês</h3>
               <span class="sub">realizado + fixos e recorrentes</span>
             </div>
             <div class="card-corpo">
@@ -157,13 +157,13 @@ export default {
               </div>
               <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-soft)">
                 <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-dim)">
-                  <span>Saldo projetado do mes</span>
+                  <span>Saldo projetado do mês</span>
                   <b style="color:${proj.projetado.saldo >= 0 ? 'var(--receita)' : 'var(--despesa)'}">
                     ${moeda(proj.projetado.saldo)}
                   </b>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-dim);margin-top:6px">
-                  <span>Faltam para projetado</span>
+                  <span>Faltam para o projetado</span>
                   <b>${moeda(Math.max(0, proj.projetado.despesas - proj.realizado.despesas))}</b>
                 </div>
               </div>
@@ -173,7 +173,7 @@ export default {
 
         <div class="grid grid-2">
           <div class="card">
-            <div class="card-cabecalho"><h3>Proximos vencimentos</h3><span class="sub">30 dias</span></div>
+            <div class="card-cabecalho"><h3>Próximos vencimentos</h3><span class="sub">30 dias</span></div>
             <div class="card-corpo">
               ${proximos.length ? `<div class="lista">${proximos.map((l2) => {
                 const dias = diasAte(l2.Data);
@@ -183,18 +183,18 @@ export default {
                     <span class="ponto" style="background:${cat?.Cor || '#64748b'}"></span>
                     <div class="principal">
                       <div class="titulo">${esc(l2.Descricao)}</div>
-                      <div class="meta">${esc(dataBR(l2.Data))} · ${dias === 0 ? 'hoje' : dias === 1 ? 'amanha' : `em ${dias} dias`} · ${esc(store.nomeCategoria(l2.CategoriaID))}</div>
+                      <div class="meta">${esc(dataBR(l2.Data))} · ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : `em ${dias} dias`} · ${esc(store.nomeCategoria(l2.CategoriaID))}</div>
                     </div>
                     <span class="valor ${l2.Tipo === 'Receita' ? 'valor-receita' : 'valor-despesa'}">
                       ${l2.Tipo === 'Receita' ? '+' : '-'}${moeda(l2.Valor).replace('-', '')}
                     </span>
                   </div>`;
-              }).join('')}</div>` : '<div class="vazio"><p>Nada vencendo nos proximos 30 dias.</p></div>'}
+              }).join('')}</div>` : '<div class="vazio"><p>Nada vencendo nos próximos 30 dias.</p></div>'}
             </div>
           </div>
 
           <div class="card">
-            <div class="card-cabecalho"><h3>Gastos fixos do mes</h3><span class="sub">se repetem todo mes</span></div>
+            <div class="card-cabecalho"><h3>Gastos fixos do mês</h3><span class="sub">se repetem todo mês</span></div>
             <div class="card-corpo">
               ${fixos.length ? `<div class="lista">${fixos.map((f) => {
                 const cat = store.categoriaPorId(f.CategoriaID);
@@ -207,7 +207,7 @@ export default {
                     </div>
                     <span class="valor valor-despesa">${moeda(f.Valor)}</span>
                   </div>`;
-              }).join('')}</div>` : '<div class="vazio"><p>Nenhum gasto fixo marcado neste mes.</p></div>'}
+              }).join('')}</div>` : '<div class="vazio"><p>Nenhum gasto fixo marcado neste mês.</p></div>'}
             </div>
           </div>
         </div>
@@ -216,7 +216,7 @@ export default {
         <div class="card">
           <div class="card-cabecalho">
             <h3>Caixinhas</h3>
-            <span class="sub">controle e projecao</span>
+            <span class="sub">controle e projeção</span>
             <div class="acoes"><a class="btn btn-pequeno" href="#/caixinhas">Ver todas</a></div>
           </div>
           <div class="card-corpo">

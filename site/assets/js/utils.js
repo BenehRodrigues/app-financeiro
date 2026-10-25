@@ -62,7 +62,7 @@ export function parseNum(v) {
 
 /* ------------------------------ datas ------------------------------- */
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-const MESES_LONGOS = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
+const MESES_LONGOS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 export function hojeISO() {
@@ -158,7 +158,7 @@ export function dataCurta(iso) {
 export function diaSemana(iso) {
   const d = paraData(iso);
   if (!d) return '';
-  return ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'][d.getDay()];
+  return ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'][d.getDay()];
 }
 
 /** 'yyyy-MM' -> 'out/2026' */

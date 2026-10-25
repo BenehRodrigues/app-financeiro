@@ -22,7 +22,7 @@ export default {
         <div class="pagina-cabecalho">
           <div class="titulos">
             <h1>Caixinhas</h1>
-            <p>Controle separado por objetivo, com projecao de quando chega na meta.</p>
+            <p>Controle separado por objetivo, com projeção de quando chega na meta.</p>
           </div>
           <div class="pagina-acoes">
             ${store.podeEditar ? `<button class="btn btn-primario" data-action="nova">${icone('somar')} Nova caixinha</button>` : ''}
@@ -38,7 +38,7 @@ export default {
             <div class="kpi" style="--kpi-cor:#22c55e">
               <div class="kpi-rotulo">Meta somada</div>
               <div class="kpi-valor">${moeda(metaTotal)}</div>
-              <div class="kpi-rodape">${metaTotal > 0 ? `${((total / metaTotal) * 100).toFixed(0)}% concluido` : ''}</div>
+              <div class="kpi-rodape">${metaTotal > 0 ? `${((total / metaTotal) * 100).toFixed(0)}% concluído` : ''}</div>
             </div>
             <div class="kpi" style="--kpi-cor:#f43f5e">
               <div class="kpi-rotulo">Falta para as metas</div>
@@ -52,7 +52,7 @@ export default {
           <div class="card"><div class="vazio">
             <div class="icone">$</div>
             <h3>Nenhuma caixinha criada</h3>
-            <p>Crie caixinhas para separar dinheiro por objetivo (reserva de emergencia, viagem, investimento…) e acompanhar a projecao.</p>
+            <p>Crie caixinhas para separar dinheiro por objetivo (reserva de emergência, viagem, investimento…) e acompanhar a projeção.</p>
             ${store.podeEditar ? '<button class="btn btn-primario" data-action="nova">Criar primeira caixinha</button>' : ''}
           </div></div>`}
       </div>`;
@@ -71,13 +71,13 @@ export default {
       if (!c) return;
       const ok = await confirmar({
         titulo: 'Excluir caixinha',
-        mensagem: `Excluir "${c.Nome}"? Todas as movimentacoes dessa caixinha tambem serao apagadas.`,
+        mensagem: `Excluir "${c.Nome}"? Todas as movimentações dessa caixinha também serão apagadas.`,
         textoOk: 'Excluir', perigo: true
       });
       if (!ok) return;
       try {
         await store.acao('excluircaixinha', { id: c.ID });
-        toast('Caixinha excluida.', 'sucesso');
+        toast('Caixinha excluída.', 'sucesso');
       } catch (e) {
         toast(e.message, 'erro');
       }
@@ -91,14 +91,14 @@ export default {
 
     async 'excluir-mov'(el) {
       const ok = await confirmar({
-        titulo: 'Excluir movimentacao',
-        mensagem: 'Remover esta movimentacao da caixinha?',
+        titulo: 'Excluir movimentação',
+        mensagem: 'Remover esta movimentação da caixinha?',
         textoOk: 'Excluir', perigo: true
       });
       if (!ok) return;
       try {
         await store.acao('excluirmovimentacao', { id: el.dataset.id });
-        toast('Movimentacao removida.', 'sucesso');
+        toast('Movimentação removida.', 'sucesso');
         fecharModal();
       } catch (e) {
         toast(e.message, 'erro');
@@ -123,14 +123,14 @@ function cartaoCaixinha(c) {
           <div class="caixinha-icone" style="background:${cor}22;color:${cor}">$</div>
           <div style="flex:1;min-width:0">
             <div class="caixinha-nome">${esc(c.Nome)}</div>
-            <div class="caixinha-desc">${esc(c.Descricao || 'Sem descricao')}</div>
+            <div class="caixinha-desc">${esc(c.Descricao || 'Sem descrição')}</div>
           </div>
           ${c.Ativo === 'NAO' ? '<span class="badge">inativa</span>' : ''}
         </div>
 
         <div>
           <div class="caixinha-saldo" style="color:${p.saldo >= 0 ? 'var(--text)' : 'var(--despesa)'}">${moeda(p.saldo)}</div>
-          <div class="num-pequeno">${movs.length} movimentacao(oes)</div>
+          <div class="num-pequeno">${movs.length} movimentação(ões)</div>
         </div>
 
         <div class="barra-progresso"><div class="barra" style="width:${p.percentual.toFixed(1)}%;background:${cor}"></div></div>
@@ -143,7 +143,7 @@ function cartaoCaixinha(c) {
         <div class="caixinha-info" style="border-top:1px solid var(--border-soft);padding-top:10px;flex-direction:column;gap:5px">
           ${p.qtdLancamentos ? `
           <div style="display:flex;justify-content:space-between;width:100%">
-            <span>Lancamentos vinculados (${p.qtdLancamentos})</span>
+            <span>Lançamentos vinculados (${p.qtdLancamentos})</span>
             <b style="color:${p.lances >= 0 ? 'var(--receita)' : 'var(--despesa)'}">${moeda(p.lances)}</b>
           </div>` : ''}
           ${p.qtdMovimentacoes ? `
@@ -160,11 +160,11 @@ function cartaoCaixinha(c) {
         ${p.meta > 0 ? `
         <div class="caixinha-info" style="border-top:1px solid var(--border-soft);padding-top:10px;flex-direction:column;gap:5px">
           <div style="display:flex;justify-content:space-between;width:100%">
-            <span>Aporte medio (3 meses)</span><b>${moeda(p.media)}</b>
+            <span>Aporte médio (3 meses)</span><b>${moeda(p.media)}</b>
           </div>
           ${p.mesesAteMeta !== null ? `
           <div style="display:flex;justify-content:space-between;width:100%">
-            <span>Chega na meta em</span><b>${p.mesesAteMeta} mes(es)</b>
+            <span>Chega na meta em</span><b>${p.mesesAteMeta} mês(es)</b>
           </div>` : `
           <div style="display:flex;justify-content:space-between;width:100%">
             <span>Chega na meta em</span><b>—</b>
@@ -172,19 +172,19 @@ function cartaoCaixinha(c) {
           ${p.prazo ? `
           <div style="display:flex;justify-content:space-between;width:100%">
             <span>Para cumprir o prazo (${esc(mesBR(p.prazo))})</span>
-            <b>${moeda(p.aporteNecessario || 0)}/mes</b>
+            <b>${moeda(p.aporteNecessario || 0)}/mês</b>
           </div>` : ''}
         </div>` : ''}
 
         ${p.serie.length ? `
         <div class="grafico">${graficos.linha({
           labels: p.serie.map((s) => mesBR(s.mes)),
-          series: [{ nome: 'Projecao', cor, valores: p.serie.map((s) => s.saldo) }],
+          series: [{ nome: 'Projeção', cor, valores: p.serie.map((s) => s.saldo) }],
           altura: 130,
           formatador: (v) => moeda(v)
         })}</div>` : ''}
 
-        ${ultimo ? `<div class="num-pequeno">Ultimo: ${esc(ultimo.Descricao || ultimo.Tipo)} · ${esc(dataBR(ultimo.Data))} · ${moeda(ultimo.Valor)}</div>` : ''}
+        ${ultimo ? `<div class="num-pequeno">Último: ${esc(ultimo.Descricao || ultimo.Tipo)} · ${esc(dataBR(ultimo.Data))} · ${moeda(ultimo.Valor)}</div>` : ''}
 
         ${store.podeEditar ? `
         <div class="caixinha-acoes">
@@ -218,14 +218,14 @@ function abrirDetalhe(id) {
           <div class="kpi-rodape">${p.restante > 0 ? `faltam ${moeda(p.restante)}` : 'atingida'}</div>
         </div>
         <div class="kpi" style="--kpi-cor:#f59e0b">
-          <div class="kpi-rotulo">Aporte medio</div><div class="kpi-valor">${moeda(p.media)}</div>
-          <div class="kpi-rodape">ultimos 3 meses</div>
+          <div class="kpi-rotulo">Aporte médio</div><div class="kpi-valor">${moeda(p.media)}</div>
+          <div class="kpi-rodape">últimos 3 meses</div>
         </div>
       </div>
 
       ${p.serie.length ? `
       <div>
-        <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Projecao (base: aporte medio)</h4>
+        <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Projeção (base: aporte médio)</h4>
         <div class="grafico">${graficos.linha({
           labels: p.serie.map((s) => mesBR(s.mes)),
           series: [{ nome: 'Saldo projetado', cor: c.Cor || '#22c55e', valores: p.serie.map((s) => s.saldo) }],
@@ -235,7 +235,7 @@ function abrirDetalhe(id) {
       </div>` : ''}
 
       <div>
-        <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Movimentacoes manuais</h4>
+        <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:8px">Movimentações manuais</h4>
         ${movs.length ? `<div class="lista">${movs.map((m) => `
           <div class="lista-item">
             <span class="ponto" style="background:${String(m.Tipo).toLowerCase().startsWith('sai') ? 'var(--despesa)' : 'var(--receita)'}"></span>
@@ -252,7 +252,7 @@ function abrirDetalhe(id) {
 
       <div>
         <h4 style="font-size:13px;color:var(--text-dim);margin-bottom:8px">
-          Lancamentos vinculados (${p.qtdLancamentos})
+          Lançamentos vinculados (${p.qtdLancamentos})
         </h4>
         ${p.lancamentos && p.lancamentos.length ? `<div class="lista">${p.lancamentos.map((l) => `
           <div class="lista-item">
@@ -266,8 +266,8 @@ function abrirDetalhe(id) {
             </span>
           </div>`).join('')}</div>` : `
           <div class="vazio"><p>
-            Nenhum lancamento vinculado a esta caixinha.<br>
-            Ao criar um lancamento, escolha esta caixinha no campo "Caixinha vinculada".
+            Nenhum lançamento vinculado a esta caixinha.<br>
+            Ao criar um lançamento, escolha esta caixinha no campo "Caixinha vinculada".
           </p></div>`}
       </div>
     </div>`;
@@ -300,7 +300,7 @@ function abrirMovimentacao(caixinhaId, tipo) {
           <label class="campo-rotulo" for="m-tipo">Tipo</label>
           <select class="select" id="m-tipo" name="Tipo">
             <option value="Entrada" ${tipo === 'Entrada' ? 'selected' : ''}>Entrada (depositar)</option>
-            <option value="Saida" ${tipo === 'Saida' ? 'selected' : ''}>Saida (resgatar)</option>
+            <option value="Saida" ${tipo === 'Saida' ? 'selected' : ''}>Saída (resgatar)</option>
           </select>
         </div>
         <div class="campo">
@@ -314,8 +314,8 @@ function abrirMovimentacao(caixinhaId, tipo) {
           <input class="input" id="m-valor" name="Valor" inputmode="decimal" placeholder="0,00" required>
         </div>
         <div class="campo">
-          <label class="campo-rotulo" for="m-desc">Descricao</label>
-          <input class="input" id="m-desc" name="Descricao" maxlength="120" placeholder="Ex.: deposito mensal">
+          <label class="campo-rotulo" for="m-desc">Descrição</label>
+          <input class="input" id="m-desc" name="Descricao" maxlength="120" placeholder="Ex.: depósito mensal">
         </div>
       </div>
       <div class="erro-campo" id="erro-form"></div>
@@ -348,7 +348,7 @@ function abrirMovimentacao(caixinhaId, tipo) {
       try {
         await store.acao('movimentarcaixinha', { dados });
         fecharModal();
-        toast('Movimentacao registrada!', 'sucesso');
+        toast('Movimentação registrada!', 'sucesso');
       } catch (e) {
         erro.textContent = e.message;
         toast(e.message, 'erro');
@@ -379,14 +379,14 @@ function abrirFormulario(c) {
         </div>
       </div>
       <div class="campo">
-        <label class="campo-rotulo" for="x-desc">Descricao</label>
+        <label class="campo-rotulo" for="x-desc">Descrição</label>
         <input class="input" id="x-desc" name="Descricao" maxlength="120" value="${esc(d.Descricao || '')}">
       </div>
       <div class="form-grid">
         <div class="campo">
-          <label class="campo-rotulo" for="x-prazo">Prazo (mes limite)</label>
+          <label class="campo-rotulo" for="x-prazo">Prazo (mês limite)</label>
           <input class="input" id="x-prazo" name="Prazo" type="month" value="${esc(d.Prazo || '')}">
-          <span class="num-pequeno">Usado para calcular quanto guardar por mes</span>
+          <span class="num-pequeno">Usado para calcular quanto guardar por mês</span>
         </div>
         <div class="campo">
           <label class="campo-rotulo" for="x-inicial">Saldo inicial</label>
