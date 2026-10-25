@@ -245,19 +245,16 @@ const ACOES_GLOBAIS = {
     window.location.reload();
   },
 
-  /** Apaga o servidor e a sessao deste navegador (aparelho compartilhado). */
+  /** Encerra a sessao atual neste navegador. */
   async desconectar() {
     const ok = await confirmar({
-      titulo: 'Desconectar',
-      mensagem: 'Serao apagados deste navegador: o servidor configurado e a sua sessao. ' +
-        'Na proxima abertura voce vera a tela para colar a URL do Web App novamente.',
-      textoOk: 'Desconectar',
+      titulo: 'Sair da conta',
+      mensagem: 'Deseja encerrar a sua sessao neste navegador?',
+      textoOk: 'Sair',
       perigo: true
     });
     if (!ok) return;
-    localStorage.removeItem(CHAVES.API_URL);
-    localStorage.removeItem(CHAVES.TOKEN);
-    localStorage.removeItem(CHAVES.USUARIO);
+    await store.logout();
     fecharModal();
     window.location.reload();
   },

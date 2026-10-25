@@ -515,10 +515,11 @@ function normalizarLinha(nomeTabela, row) {
  * ===================================================================== */
 export function obterDB(env) {
   if (!env) return null;
-  if (env.DB && typeof env.DB.prepare === 'function') return env.DB;
-  if (env.D1 && typeof env.D1.prepare === 'function') return env.D1;
-  if (env.DATABASE && typeof env.DATABASE.prepare === 'function') return env.DATABASE;
+  for (const k of ['DB', 'db', 'D1', 'd1', 'DATABASE', 'database']) {
+    if (env[k] && typeof env[k].prepare === 'function') return env[k];
+  }
   for (const k of Object.keys(env)) {
+    if (k === 'ASSETS') continue;
     if (env[k] && typeof env[k].prepare === 'function') return env[k];
   }
   return null;
@@ -526,9 +527,10 @@ export function obterDB(env) {
 
 /**
  * Cria as 9 tabelas e popula dados padrao caso o banco D1 esteja vazio.
- * Idempotente e seguro para rodar multiplas vezes.
+ * Idempotente e seguro: usa apenas .run() / .first() diretos sem db.batch()
+ * para evitar erro de serializacao JsRpcPromise no runtime da Cloudflare.
  */
-export async function garantirBanco(db) {
+export async function garantirBanco(db, forcar = false) {
   if (!db) {
     throw erroObj(
       'Banco D1 nao vinculado ao Worker. No painel da Cloudflare, va em Worker > Settings > Bindings e adicione o D1 Database com nome de variavel "DB".',
@@ -544,59 +546,44 @@ export async function garantirBanco(db) {
     jaExiste = false;
   }
 
-  // Cria tabelas e indices se necessario
-  const stmts = DDL_TABELAS.map((sql) => db.prepare(sql));
-  await db.batch(stmts);
+  if (!jaExiste || forcar) {
+    for (const sql of DDL_TABELAS) {
+      await db.prepare(sql).run();
+    }
+  }
 
   // Verifica se precisa semear Config, Categorias, Contas e Caixinhas
-  const [cntCfg, cntCat, cntCnt, cntCx] = await db.batch([
-    db.prepare('SELECT COUNT(*) AS n FROM Config'),
-    db.prepare('SELECT COUNT(*) AS n FROM Categorias'),
-    db.prepare('SELECT COUNT(*) AS n FROM Contas'),
-    db.prepare('SELECT COUNT(*) AS n FROM Caixinhas')
-  ]);
-
-  const seedStmts = [];
-  const ts = agora();
-
-  if (Number(cntCfg.results?.[0]?.n || 0) === 0) {
+  const cntCfg = await db.prepare('SELECT COUNT(*) AS n FROM Config').first();
+  if (Number(cntCfg?.n || 0) === 0) {
+    const ts = agora();
     for (const [id, chave, valor, desc] of SEED_CONFIG) {
-      seedStmts.push(
-        db.prepare('INSERT OR IGNORE INTO Config (ID, Chave, Valor, Descricao) VALUES (?, ?, ?, ?)')
-          .bind(id, chave, valor, desc)
-      );
+      await db.prepare('INSERT OR IGNORE INTO Config (ID, Chave, Valor, Descricao) VALUES (?, ?, ?, ?)')
+        .bind(id, chave, valor, desc).run();
     }
-  }
 
-  if (Number(cntCat.results?.[0]?.n || 0) === 0) {
-    for (const [id, nome, tipo, grupo, cor] of SEED_CATEGORIAS) {
-      seedStmts.push(
-        db.prepare('INSERT OR IGNORE INTO Categorias (ID, Nome, Tipo, Grupo, Cor, OrcamentoMensal, Ativo, Obs, CriadoEm) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)')
-          .bind(id, nome, tipo, grupo, cor, 'SIM', '', ts)
-      );
+    const cntCat = await db.prepare('SELECT COUNT(*) AS n FROM Categorias').first();
+    if (Number(cntCat?.n || 0) === 0) {
+      for (const [id, nome, tipo, grupo, cor] of SEED_CATEGORIAS) {
+        await db.prepare('INSERT OR IGNORE INTO Categorias (ID, Nome, Tipo, Grupo, Cor, OrcamentoMensal, Ativo, Obs, CriadoEm) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)')
+          .bind(id, nome, tipo, grupo, cor, 'SIM', '', ts).run();
+      }
     }
-  }
 
-  if (Number(cntCnt.results?.[0]?.n || 0) === 0) {
-    for (const [id, nome, tipo, inst, limite, venc, cor] of SEED_CONTAS) {
-      seedStmts.push(
-        db.prepare('INSERT OR IGNORE INTO Contas (ID, Nome, Tipo, Instituicao, Limite, DiaVencimento, Cor, Ativo, Obs, CriadoEm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-          .bind(id, nome, tipo, inst, limite, venc, cor, 'SIM', '', ts)
-      );
+    const cntCnt = await db.prepare('SELECT COUNT(*) AS n FROM Contas').first();
+    if (Number(cntCnt?.n || 0) === 0) {
+      for (const [id, nome, tipo, inst, limite, venc, cor] of SEED_CONTAS) {
+        await db.prepare('INSERT OR IGNORE INTO Contas (ID, Nome, Tipo, Instituicao, Limite, DiaVencimento, Cor, Ativo, Obs, CriadoEm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+          .bind(id, nome, tipo, inst, limite, venc, cor, 'SIM', '', ts).run();
+      }
     }
-  }
 
-  if (Number(cntCx.results?.[0]?.n || 0) === 0) {
-    for (const [id, nome, desc, meta, prazo, cor] of SEED_CAIXINHAS) {
-      seedStmts.push(
-        db.prepare('INSERT OR IGNORE INTO Caixinhas (ID, Nome, Descricao, Meta, Prazo, SaldoInicial, Cor, Ativo, CriadoEm, CriadoPor) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)')
-          .bind(id, nome, desc, meta, prazo, cor, 'SIM', ts, 'setup')
-      );
+    const cntCx = await db.prepare('SELECT COUNT(*) AS n FROM Caixinhas').first();
+    if (Number(cntCx?.n || 0) === 0) {
+      for (const [id, nome, desc, meta, prazo, cor] of SEED_CAIXINHAS) {
+        await db.prepare('INSERT OR IGNORE INTO Caixinhas (ID, Nome, Descricao, Meta, Prazo, SaldoInicial, Cor, Ativo, CriadoEm, CriadoPor) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)')
+          .bind(id, nome, desc, meta, prazo, cor, 'SIM', ts, 'setup').run();
+      }
     }
-  }
-
-  if (seedStmts.length > 0) {
-    await db.batch(seedStmts);
   }
 
   return { criado: !jaExiste };
@@ -789,13 +776,13 @@ async function acaoCriarPlanilha(db, req) {
 
 async function acaoBootstrap(db, ctx) {
   const u = ctx.usuario;
-  const [resCfg, resCat, resCnt, resLanc, resCx, resMov] = await db.batch([
-    db.prepare('SELECT * FROM Config'),
-    db.prepare('SELECT * FROM Categorias'),
-    db.prepare('SELECT * FROM Contas'),
-    db.prepare('SELECT * FROM Lancamentos'),
-    db.prepare('SELECT * FROM Caixinhas'),
-    db.prepare('SELECT * FROM Movimentacoes')
+  const [resCfg, resCat, resCnt, resLanc, resCx, resMov] = await Promise.all([
+    db.prepare('SELECT * FROM Config').all(),
+    db.prepare('SELECT * FROM Categorias').all(),
+    db.prepare('SELECT * FROM Contas').all(),
+    db.prepare('SELECT * FROM Lancamentos').all(),
+    db.prepare('SELECT * FROM Caixinhas').all(),
+    db.prepare('SELECT * FROM Movimentacoes').all()
   ]);
 
   const config = {};
@@ -840,12 +827,10 @@ async function acaoLogin(db, req) {
   const expiraStr = fmtDataHora(expira);
   const agoraStr = agora();
 
-  await db.batch([
-    db.prepare(
-      'INSERT INTO Sessoes (ID, Token, UsuarioID, Email, CriadoEm, ExpiraEm, Ativo) VALUES (?, ?, ?, ?, ?, ?, ?)'
-    ).bind(novoId(), token, u.ID, u.Email, agoraStr, expiraStr, 'SIM'),
-    db.prepare('UPDATE Acessos SET UltimoAcesso = ? WHERE ID = ?').bind(agoraStr, u.ID)
-  ]);
+  await db.prepare(
+    'INSERT INTO Sessoes (ID, Token, UsuarioID, Email, CriadoEm, ExpiraEm, Ativo) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).bind(novoId(), token, u.ID, u.Email, agoraStr, expiraStr, 'SIM').run();
+  await db.prepare('UPDATE Acessos SET UltimoAcesso = ? WHERE ID = ?').bind(agoraStr, u.ID).run();
 
   await logAcao(db, u, 'login', 'Acessos', u.ID, 'Login realizado');
 
@@ -962,7 +947,6 @@ async function acaoSalvarLancamento(db, req, ctx) {
   if (parcelas > 1) {
     const grupo = novoId();
     const ids = [];
-    const stmts = [];
     const criadoEm = agora();
 
     for (let i = 0; i < parcelas; i++) {
@@ -971,22 +955,19 @@ async function acaoSalvarLancamento(db, req, ctx) {
       const dataStr = fmtData(dtParcela);
       const compStr = competenciaDe(dtParcela);
       ids.push(id);
-      stmts.push(
-        db.prepare(
-          `INSERT INTO Lancamentos (
-            ID, Data, Tipo, Valor, Descricao, CategoriaID, ContaID, FormaPagamento,
-            Parcelas, ParcelaAtual, Status, Recorrente, Fixo, Competencia, CaixinhaID,
-            GrupoParcelas, Obs, CriadoEm, AtualizadoEm, CriadoPor
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).bind(
-          id, dataStr, base.Tipo, base.Valor, base.Descricao, base.CategoriaID, base.ContaID,
-          base.FormaPagamento, parcelas, i + 1, base.Status, base.Recorrente, base.Fixo,
-          compStr, base.CaixinhaID, grupo, base.Obs, criadoEm, base.AtualizadoEm, base.CriadoPor
-        )
-      );
+      await db.prepare(
+        `INSERT INTO Lancamentos (
+          ID, Data, Tipo, Valor, Descricao, CategoriaID, ContaID, FormaPagamento,
+          Parcelas, ParcelaAtual, Status, Recorrente, Fixo, Competencia, CaixinhaID,
+          GrupoParcelas, Obs, CriadoEm, AtualizadoEm, CriadoPor
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        id, dataStr, base.Tipo, base.Valor, base.Descricao, base.CategoriaID, base.ContaID,
+        base.FormaPagamento, parcelas, i + 1, base.Status, base.Recorrente, base.Fixo,
+        compStr, base.CaixinhaID, grupo, base.Obs, criadoEm, base.AtualizadoEm, base.CriadoPor
+      ).run();
     }
 
-    await db.batch(stmts);
     await logAcao(db, ctx.usuario, 'criar', 'Lancamentos', grupo, `${parcelas} parcelas de ${valorArredondado}`);
     return { ok: true, ids, grupo };
   }
@@ -1164,10 +1145,8 @@ async function acaoExcluirCaixinha(db, req, ctx) {
   const cnt = await db.prepare('SELECT COUNT(*) AS n FROM Movimentacoes WHERE CaixinhaID = ?').bind(id).first();
   const movs = Number(cnt?.n || 0);
 
-  await db.batch([
-    db.prepare('DELETE FROM Movimentacoes WHERE CaixinhaID = ?').bind(id),
-    db.prepare('DELETE FROM Caixinhas WHERE ID = ?').bind(id)
-  ]);
+  await db.prepare('DELETE FROM Movimentacoes WHERE CaixinhaID = ?').bind(id).run();
+  await db.prepare('DELETE FROM Caixinhas WHERE ID = ?').bind(id).run();
 
   await logAcao(db, ctx.usuario, 'excluir', 'Caixinhas', id, `${movs} movimentacao(oes) removida(s)`);
   return { ok: true, movsRemovidas: movs };
@@ -1292,10 +1271,8 @@ async function acaoExcluirUsuario(db, req, ctx) {
   if (id === String(ctx.usuario.ID)) {
     throw erroObj('Voce nao pode excluir o proprio usuario.', 'DADOS');
   }
-  await db.batch([
-    db.prepare('DELETE FROM Sessoes WHERE UsuarioID = ?').bind(id),
-    db.prepare('DELETE FROM Acessos WHERE ID = ?').bind(id)
-  ]);
+  await db.prepare('DELETE FROM Sessoes WHERE UsuarioID = ?').bind(id).run();
+  await db.prepare('DELETE FROM Acessos WHERE ID = ?').bind(id).run();
   await logAcao(db, ctx.usuario, 'excluir', 'Acessos', id, '');
   return { ok: true };
 }
@@ -1311,10 +1288,8 @@ async function acaoTrocarSenha(db, req, ctx) {
   const salt = gerarSalt();
   const senhaHash = await hashSenha(nova, salt);
 
-  await db.batch([
-    db.prepare('UPDATE Acessos SET Salt = ?, SenhaHash = ? WHERE ID = ?').bind(salt, senhaHash, ctx.usuario.ID),
-    db.prepare('DELETE FROM Sessoes WHERE UsuarioID = ?').bind(ctx.usuario.ID)
-  ]);
+  await db.prepare('UPDATE Acessos SET Salt = ?, SenhaHash = ? WHERE ID = ?').bind(salt, senhaHash, ctx.usuario.ID).run();
+  await db.prepare('DELETE FROM Sessoes WHERE UsuarioID = ?').bind(ctx.usuario.ID).run();
 
   await logAcao(db, ctx.usuario, 'senha', 'Acessos', ctx.usuario.ID, 'Senha alterada');
   return { ok: true, mensagem: 'Senha alterada. Faca login novamente.' };
@@ -1347,20 +1322,16 @@ async function acaoLimpar(db, req, ctx) {
     throw erroObj('Confirmacao invalida. Digite exatamente APAGAR TUDO.', 'DADOS');
   }
 
-  const [c1, c2, c3] = await db.batch([
-    db.prepare('SELECT COUNT(*) AS n FROM Lancamentos'),
-    db.prepare('SELECT COUNT(*) AS n FROM Movimentacoes'),
-    db.prepare('SELECT COUNT(*) AS n FROM Caixinhas')
+  const [c1, c2, c3] = await Promise.all([
+    db.prepare('SELECT COUNT(*) AS n FROM Lancamentos').first(),
+    db.prepare('SELECT COUNT(*) AS n FROM Movimentacoes').first(),
+    db.prepare('SELECT COUNT(*) AS n FROM Caixinhas').first()
   ]);
-  const total = Number(c1.results?.[0]?.n || 0) +
-                Number(c2.results?.[0]?.n || 0) +
-                Number(c3.results?.[0]?.n || 0);
+  const total = Number(c1?.n || 0) + Number(c2?.n || 0) + Number(c3?.n || 0);
 
-  await db.batch([
-    db.prepare('DELETE FROM Lancamentos'),
-    db.prepare('DELETE FROM Movimentacoes'),
-    db.prepare('DELETE FROM Caixinhas')
-  ]);
+  await db.prepare('DELETE FROM Lancamentos').run();
+  await db.prepare('DELETE FROM Movimentacoes').run();
+  await db.prepare('DELETE FROM Caixinhas').run();
 
   await logAcao(db, ctx.usuario, 'limpar', 'Lancamentos', '', `${total} linhas removidas`);
   return { ok: true, removidas: total };
